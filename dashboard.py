@@ -1,9 +1,13 @@
+import os
 import streamlit as st
 from ultralytics import YOLO
 import numpy as np
 from PIL import Image
 import io
 import time
+
+# Gunakan polling agar tidak error di Streamlit Cloud
+os.environ["STREAMLIT_WATCHER_TYPE"] = "poll"
 
 # ======================================
 # Konfigurasi Tampilan Halaman
@@ -27,7 +31,6 @@ body, .stApp {
     font-family: 'Poppins', sans-serif;
 }
 
-/* Hero Section */
 h1 {
     font-size: 3rem;
     font-weight: 700;
@@ -36,14 +39,12 @@ h1 {
     -webkit-text-fill-color: transparent;
 }
 
-/* Subtitle */
 .subtext {
     font-size: 1.1rem;
     color: #b0b0b0;
     margin-bottom: 25px;
 }
 
-/* Tombol Utama */
 .stButton>button {
     background: linear-gradient(90deg, #00e0ff, #7a00ff);
     color: white;
@@ -59,7 +60,6 @@ h1 {
     transform: translateY(-2px);
 }
 
-/* Card hasil deteksi */
 .result-card {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
@@ -68,13 +68,11 @@ h1 {
     box-shadow: 0 0 30px rgba(0,0,0,0.4);
 }
 
-/* Gambar */
 .stImage > img {
     border-radius: 12px;
     box-shadow: 0 0 20px rgba(0,0,0,0.3);
 }
 
-/* Info */
 .info-box {
     background: linear-gradient(90deg, #151a28, #1e2440);
     border-radius: 10px;
@@ -103,6 +101,15 @@ def load_yolo_model():
     return YOLO("model/Cahyo_Laporan4.pt")
 
 model = load_yolo_model()
+
+# ======================================
+# Fungsi untuk file unduhan
+# ======================================
+def get_downloadable_image(image_array):
+    img_pil = Image.fromarray(image_array)
+    buf = io.BytesIO()
+    img_pil.save(buf, format="PNG")
+    return buf.getvalue()
 
 # ======================================
 # Bagian UI
@@ -136,15 +143,16 @@ if detect_button and uploaded_file:
     st.markdown("<div class='result-card'>", unsafe_allow_html=True)
     st.image(result_img, caption="Detection Result", use_container_width=True)
     st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-    # Tombol download hasil deteksi
-st.download_button(
-    label="💾 Unduh Hasil Deteksi",
-    data=get_downloadable_image(result_img),  # ✅ pakai hasil fungsi
-    file_name="hasil_deteksi_wajah.png",
-    mime="image/png"
-)
 
-    # Tampilkan wajah terdeteksi
+    # ✅ Tombol download hasil deteksi
+    st.download_button(
+        label="💾 Unduh Hasil Deteksi",
+        data=get_downloadable_image(result_img),
+        file_name="hasil_deteksi_wajah.png",
+        mime="image/png"
+    )
+
+    # ✅ Tampilkan wajah terdeteksi
     boxes = results[0].boxes.xyxy
     if len(boxes) > 0:
         st.markdown("### Detected Faces")
