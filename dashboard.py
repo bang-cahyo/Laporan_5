@@ -190,7 +190,7 @@ elif not uploaded_file:
 # ======================================
 st.markdown("""
 <footer>
-    🤖 YOLO Face Detection Dashboard | Created with ❤️ by <b>Heru Bagus Cahyo</b> <br>
+    🤖 YOLO Face Detection Dashboard | Created with  by <b>Heru Bagus Cahyo</b> <br>
     Powered by Streamlit & Ultralytics YOLOv8
 </footer>
 """, unsafe_allow_html=True)
