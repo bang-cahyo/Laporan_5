@@ -1,4 +1,3 @@
-import os
 import streamlit as st
 from ultralytics import YOLO
 import numpy as np
@@ -6,11 +5,8 @@ from PIL import Image
 import io
 import time
 
-# Gunakan polling agar tidak error di Streamlit Cloud
-os.environ["STREAMLIT_WATCHER_TYPE"] = "poll"
-
 # ======================================
-# Konfigurasi Tampilan Halaman
+# Konfigurasi Halaman
 # ======================================
 st.set_page_config(
     page_title="YOLO Face Detection",
@@ -31,6 +27,7 @@ body, .stApp {
     font-family: 'Poppins', sans-serif;
 }
 
+/* Hero Title */
 h1 {
     font-size: 3rem;
     font-weight: 700;
@@ -39,12 +36,14 @@ h1 {
     -webkit-text-fill-color: transparent;
 }
 
+/* Subtext */
 .subtext {
     font-size: 1.1rem;
     color: #b0b0b0;
     margin-bottom: 25px;
 }
 
+/* Tombol */
 .stButton>button {
     background: linear-gradient(90deg, #00e0ff, #7a00ff);
     color: white;
@@ -60,6 +59,7 @@ h1 {
     transform: translateY(-2px);
 }
 
+/* Card hasil deteksi */
 .result-card {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
@@ -68,11 +68,13 @@ h1 {
     box-shadow: 0 0 30px rgba(0,0,0,0.4);
 }
 
+/* Gambar hasil */
 .stImage > img {
     border-radius: 12px;
     box-shadow: 0 0 20px rgba(0,0,0,0.3);
 }
 
+/* Info box */
 .info-box {
     background: linear-gradient(90deg, #151a28, #1e2440);
     border-radius: 10px;
@@ -80,10 +82,10 @@ h1 {
     color: #bcd4ff;
     font-size: 0.95rem;
     margin-top: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
     text-align: center;
 }
 
+/* Footer */
 footer {
     text-align: center;
     color: gray;
@@ -92,6 +94,19 @@ footer {
 }
 </style>
 """, unsafe_allow_html=True)
+
+
+# ======================================
+# Fungsi tambahan untuk download hasil deteksi
+# ======================================
+def get_downloadable_image(np_img):
+    """Konversi array hasil deteksi menjadi file PNG yang bisa diunduh."""
+    image = Image.fromarray(np_img)
+    buf = io.BytesIO()
+    image.save(buf, format="PNG")
+    byte_im = buf.getvalue()
+    return byte_im
+
 
 # ======================================
 # Load Model YOLO
@@ -102,17 +117,9 @@ def load_yolo_model():
 
 model = load_yolo_model()
 
-# ======================================
-# Fungsi untuk file unduhan
-# ======================================
-def get_downloadable_image(image_array):
-    img_pil = Image.fromarray(image_array)
-    buf = io.BytesIO()
-    img_pil.save(buf, format="PNG")
-    return buf.getvalue()
 
 # ======================================
-# Bagian UI
+# Bagian UI — Tampilan Utama
 # ======================================
 col1, col2 = st.columns([1.2, 1], gap="large")
 
@@ -125,6 +132,7 @@ with col1:
 
 with col2:
     st.empty()
+
 
 # ======================================
 # Deteksi Wajah
@@ -139,21 +147,20 @@ if detect_button and uploaded_file:
         inference_time = time.time() - start_time
 
     result_img = results[0].plot()
+    boxes = results[0].boxes.xyxy
 
     st.markdown("<div class='result-card'>", unsafe_allow_html=True)
     st.image(result_img, caption="Detection Result", use_container_width=True)
     st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
 
-    # ✅ Tombol download hasil deteksi
     st.download_button(
-        label="💾 Unduh Hasil Deteksi",
+        label="💾 Download Detection Result",
         data=get_downloadable_image(result_img),
         file_name="hasil_deteksi_wajah.png",
         mime="image/png"
     )
 
-    # ✅ Tampilkan wajah terdeteksi
-    boxes = results[0].boxes.xyxy
+    # Menampilkan wajah yang terdeteksi
     if len(boxes) > 0:
         st.markdown("### Detected Faces")
         face_cols = st.columns(min(4, len(boxes)))
@@ -162,12 +169,19 @@ if detect_button and uploaded_file:
             face_crop = img_np[y1:y2, x1:x2]
             face_img = Image.fromarray(face_crop)
             face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
+    else:
+        st.warning("⚠️ No faces detected in this image.")
     st.markdown("</div>", unsafe_allow_html=True)
 
 elif not uploaded_file:
     st.info("📁 Please upload an image to begin detection.")
 
+
 # ======================================
-# Footer
+# Footer — Credit Pembuat
 # ======================================
-st.markdown("<footer>Made with ❤️ using Streamlit & YOLO — Inspired by NFT UI Design</footer>", unsafe_allow_html=True)
+st.markdown("""
+<footer>
+    Made with ❤️ using Streamlit & YOLO — Designed and Developed by <b>Heru Bagus Cahyo</b>
+</footer>
+""", unsafe_allow_html=True)
