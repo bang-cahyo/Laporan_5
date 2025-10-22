@@ -135,7 +135,6 @@ footer {
 # Fungsi tambahan untuk download hasil deteksi
 # ======================================
 def get_downloadable_image(np_img):
-    """Konversi array hasil deteksi menjadi file PNG yang bisa diunduh."""
     image = Image.fromarray(np_img)
     buf = io.BytesIO()
     image.save(buf, format="PNG")
@@ -157,22 +156,26 @@ col1, col2 = st.columns([1.2, 1], gap="large")
 
 with col1:
     st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
-    # Animasi teks neon untuk nama developer
     st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
     st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>", unsafe_allow_html=True)
     
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
     detect_button = st.button("🚀 Detect Faces")
 
-    # Tombol About Me
+    # Tombol About Me otomatis menampilkan biodata + foto
     if st.button("💾 About Me"):
-        st.info("""
-        **Nama:** Heru Bagus Cahyo  
-        **Pekerjaan:** Data Scientist / AI Enthusiast  
-        **Email:** herubagus@example.com  
-        **Instagram:** @herubaguscahyo  
-        """)
-        
+        col1_bio, col2_bio = st.columns([1,1])
+        with col1_bio:
+            st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
+        with col2_bio:
+            st.info("""
+            **Nama:** Heru Bagus Cahyo  
+            **Jurusan:** Statistika  
+            **Angkatan:** 2022  
+            **Email:** herubagusapk@gmail.com  
+            **Instagram:** @herubaguscahyo  
+            """)
+
 with col2:
     st.empty()
 
