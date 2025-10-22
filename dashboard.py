@@ -9,7 +9,7 @@ import time
 # Konfigurasi Halaman
 # ======================================
 st.set_page_config(
-    page_title="YOLO Face Detection",
+    page_title="YOLO Face Detection by Heru Bagus Cahyo",
     page_icon="🤖",
     layout="wide"
 )
@@ -41,6 +41,15 @@ h1 {
     font-size: 1.1rem;
     color: #b0b0b0;
     margin-bottom: 25px;
+}
+
+/* Credit name */
+.credit {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #00e0ff;
+    text-shadow: 0 0 8px rgba(0, 224, 255, 0.6);
+    margin-bottom: 15px;
 }
 
 /* Tombol */
@@ -104,8 +113,7 @@ def get_downloadable_image(np_img):
     image = Image.fromarray(np_img)
     buf = io.BytesIO()
     image.save(buf, format="PNG")
-    byte_im = buf.getvalue()
-    return byte_im
+    return buf.getvalue()
 
 
 # ======================================
@@ -124,7 +132,8 @@ model = load_yolo_model()
 col1, col2 = st.columns([1.2, 1], gap="large")
 
 with col1:
-    st.markdown("<h1>Face Detection Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown("<p class='credit'>👨‍💻 Developed by <b>Heru Bagus Cahyo</b></p>", unsafe_allow_html=True)
     st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>", unsafe_allow_html=True)
     
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
@@ -160,7 +169,6 @@ if detect_button and uploaded_file:
         mime="image/png"
     )
 
-    # Menampilkan wajah yang terdeteksi
     if len(boxes) > 0:
         st.markdown("### Detected Faces")
         face_cols = st.columns(min(4, len(boxes)))
@@ -182,6 +190,7 @@ elif not uploaded_file:
 # ======================================
 st.markdown("""
 <footer>
-    Made with ❤️ using Streamlit & YOLO — Designed and Developed by <b>Heru Bagus Cahyo</b>
+    🤖 YOLO Face Detection Dashboard | Created with ❤️ by <b>Heru Bagus Cahyo</b> <br>
+    Powered by Streamlit & Ultralytics YOLOv8
 </footer>
 """, unsafe_allow_html=True)
