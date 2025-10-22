@@ -136,12 +136,13 @@ if detect_button and uploaded_file:
     st.markdown("<div class='result-card'>", unsafe_allow_html=True)
     st.image(result_img, caption="Detection Result", use_container_width=True)
     st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-    st.download_button(
-        label="💾 Download Result",
-        data=lambda: io.BytesIO(Image.fromarray(result_img).tobytes()),
-        file_name="face_detection_result.png",
-        mime="image/png"
-    )
+    # Tombol download hasil deteksi
+st.download_button(
+    label="💾 Unduh Hasil Deteksi",
+    data=get_downloadable_image(result_img),  # ✅ pakai hasil fungsi
+    file_name="hasil_deteksi_wajah.png",
+    mime="image/png"
+)
 
     # Tampilkan wajah terdeteksi
     boxes = results[0].boxes.xyxy
