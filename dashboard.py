@@ -1,24 +1,22 @@
 import streamlit as st
 from ultralytics import YOLO
-import tensorflow as tf
-from tensorflow.keras.preprocessing import image
 import numpy as np
 from PIL import Image
 import io
 import time
 import cv2
 
-# ======================================
-# Konfigurasi Tampilan Streamlit
-# ======================================
+# ======================================================
+# KONFIGURASI DASHBOARD
+# ======================================================
 st.set_page_config(
-    page_title="Pendeteksi Ekspresi",
+    page_title="Deteksi Wajah Otomatis",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS untuk dark mode elegan
+# Custom Dark Mode Elegan
 st.markdown("""
     <style>
     body {
@@ -29,82 +27,79 @@ st.markdown("""
         background-color: #0e1117;
         color: #fafafa;
     }
+    .stButton>button {
+        background-color: #00ccff;
+        color: white;
+        border-radius: 8px;
+        height: 3em;
+        width: 100%;
+        font-weight: bold;
+    }
     .stProgress > div > div > div {
         background-color: #00ccff;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# ======================================
-# Load Models (Cache)
-# ======================================
+# ======================================================
+# LOAD MODEL YOLO (CACHED)
+# ======================================================
 @st.cache_resource
-def load_models():
-    yolo_model = YOLO("model/Cahyo_Laporan4.pt")  # Model deteksi wajah
-    classifier = tf.keras.models.load_model("model/Cahyo_Laporan2 (1).h5")  # Model klasifikasi ekspresi
-    return yolo_model, classifier
+def load_model():
+    model = YOLO("model/Cahyo_Laporan4.pt")  # ganti sesuai nama model kamu
+    return model
 
-yolo_model, classifier = load_models()
+yolo_model = load_model()
 
-# ======================================
-# Label Ekspresi
-# ======================================
-label_dict = {
-    0: "Anger",
-    1: "Disgust",
-    2: "Fear",
-    3: "Happy",
-    4: "Pain",
-    5: "Sad"
-}
-
-# ======================================
-# UI Utama
-# ======================================
-st.title("🧠 Pendeteksi Ekspresi Wajah")
-st.caption("Deteksi Wajah (YOLO) & Klasifikasi Ekspresi (TensorFlow)")
-
-menu = st.sidebar.radio("Pilih Mode:", ["🔍 Deteksi Wajah", "🧩 Klasifikasi Ekspresi"])
-uploaded_file = st.file_uploader("Unggah Gambar Wajah", type=["jpg", "jpeg", "png"])
-
-# ======================================
-# Fungsi Download
-# ======================================
+# ======================================================
+# FUNGSI UTILITAS
+# ======================================================
 def get_downloadable_image(image_array):
+    """Mengonversi array gambar menjadi file PNG agar bisa diunduh."""
     img_pil = Image.fromarray(image_array)
     buf = io.BytesIO()
     img_pil.save(buf, format="PNG")
-    byte_im = buf.getvalue()
-    return byte_im
+    return buf.getvalue()
 
-# ======================================
-# Logika Utama
-# ======================================
-if uploaded_file is not None:
-    img = Image.open(uploaded_file).convert("RGB")
-    img_cv2 = np.array(img)
+# ======================================================
+# ANTARMUKA UTAMA
+# ======================================================
+st.title("🧠 Dashboard Deteksi Wajah Otomatis")
+st.caption("Aplikasi berbasis Streamlit dan YOLO untuk mendeteksi wajah pada gambar")
 
-    # Layout dua kolom
-    col1, col2 = st.columns([1, 1])
+# Sidebar Menu
+st.sidebar.header("📂 Menu")
+menu = st.sidebar.radio("Pilih Halaman:", ["Deteksi Wajah", "Penjelasan Fitur Dashboard"])
 
-    with col1:
-        st.subheader("🖼️ Gambar Asli")
-        st.image(img, use_container_width=True)
+# ======================================================
+# MODE 1: DETEKSI WAJAH
+# ======================================================
+if menu == "Deteksi Wajah":
+    st.subheader("🔍 Unggah Gambar untuk Deteksi Wajah")
+    uploaded_file = st.file_uploader("Pilih gambar (format: JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"])
 
-    with col2:
-        if menu == "🔍 Deteksi Wajah":
-            st.subheader("📦 Hasil Deteksi Wajah")
+    if uploaded_file is not None:
+        img = Image.open(uploaded_file).convert("RGB")
+        img_cv2 = np.array(img)
 
+        # Dua kolom: kiri (gambar asli), kanan (hasil deteksi)
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.image(img, caption="🖼️ Gambar Asli", use_container_width=True)
+
+        with col2:
+            st.write("📦 **Hasil Deteksi Wajah**")
             start_time = time.time()
             results = yolo_model(img_cv2)
             inference_time = time.time() - start_time
 
-            # Ambil hasil deteksi (gambar + koordinat)
+            # Ambil hasil deteksi
             result_img = results[0].plot()
             st.image(result_img, use_container_width=True)
             st.success(f"Waktu inferensi: {inference_time:.2f} detik")
 
-            # Tombol download hasil deteksi
+            # Tombol unduh
             st.download_button(
                 label="💾 Unduh Hasil Deteksi",
                 data=get_downloadable_image(result_img),
@@ -112,52 +107,74 @@ if uploaded_file is not None:
                 mime="image/png"
             )
 
-            # Crop wajah dari hasil deteksi
-            boxes = results[0].boxes.xyxy
-            if len(boxes) > 0:
-                st.markdown("### 🔍 Wajah Terdeteksi:")
-                for i, box in enumerate(boxes):
-                    x1, y1, x2, y2 = map(int, box[:4])
-                    face_crop = img_cv2[y1:y2, x1:x2]
+        # ======================================================
+        # Crop wajah hasil deteksi (jika ada)
+        # ======================================================
+        boxes = results[0].boxes.xyxy
+        if len(boxes) > 0:
+            st.markdown("### 👤 Wajah yang Terdeteksi:")
+            cols = st.columns(3)
+            for i, box in enumerate(boxes):
+                x1, y1, x2, y2 = map(int, box[:4])
+                face_crop = img_cv2[y1:y2, x1:x2]
+                if face_crop.size > 0:
                     face_pil = Image.fromarray(face_crop)
-                    st.image(face_pil, caption=f"Wajah {i+1}", width=200)
+                    with cols[i % 3]:
+                        st.image(face_pil, caption=f"Wajah {i+1}", width=180)
+        else:
+            st.warning("⚠️ Tidak ada wajah terdeteksi pada gambar ini.")
 
-        elif menu == "🧩 Klasifikasi Ekspresi":
-            st.subheader("📊 Hasil Klasifikasi Ekspresi")
+# ======================================================
+# MODE 2: PENJELASAN FITUR DASHBOARD
+# ======================================================
+elif menu == "Penjelasan Fitur Dashboard":
+    st.header("📘 Penjelasan Fitur Dashboard")
 
-            # Deteksi input shape model
-            model_input_shape = classifier.input_shape[1:3]
-            st.caption(f"Model ini menerima input gambar berukuran: {model_input_shape}")
+    st.markdown("""
+    ### **a. Fitur-fitur utama**
+    1. **Unggah Gambar** — Menggunakan `st.file_uploader` untuk mengunggah gambar wajah.
+    2. **Deteksi Wajah (YOLO)** — Model YOLO mendeteksi wajah dan menampilkan bounding box.
+    3. **Waktu Inferensi** — Mengukur waktu proses model dalam mendeteksi wajah.
+    4. **Crop Wajah** — Menampilkan potongan (crop) setiap wajah yang terdeteksi.
+    5. **Unduh Hasil Deteksi** — Tombol `st.download_button` untuk menyimpan hasil deteksi.
+    6. **Tampilan Dark Mode Elegan** — Menggunakan *custom CSS* agar tampilan lebih profesional.
 
-            # Preprocessing
-            img_resized = img.resize(model_input_shape)
-            img_array = image.img_to_array(img_resized)
-            img_array = np.expand_dims(img_array, axis=0)
-            img_array = img_array / 255.0
+    ---
 
-            # Prediksi
-            start_time = time.time()
-            try:
-                prediction = classifier.predict(img_array)
-                inference_time = time.time() - start_time
+    ### **b. Komponen Streamlit yang digunakan**
+    | Komponen | Fungsi |
+    |-----------|--------|
+    | `st.file_uploader` | Mengunggah gambar dari perangkat |
+    | `st.image` | Menampilkan gambar dan hasil deteksi |
+    | `st.columns` | Membagi layout menjadi dua kolom |
+    | `st.download_button` | Mengunduh hasil deteksi |
+    | `st.cache_resource` | Menyimpan model YOLO di cache agar tidak diload ulang |
+    | `st.success`, `st.warning` | Menampilkan notifikasi hasil |
+    | `st.sidebar.radio` | Menu navigasi antar halaman |
+    | `st.markdown` | Menulis teks dan tabel deskriptif |
 
-                class_index = np.argmax(prediction)
-                class_label = label_dict.get(class_index, f"Class {class_index}")
-                confidence = float(np.max(prediction))
+    ---
 
-                st.markdown(f"### 🏷️ Ekspresi: **{class_label}**")
-                st.markdown(f"**Probabilitas:** {confidence*100:.2f}%")
-                st.progress(confidence)
-                st.success(f"Waktu inferensi: {inference_time:.2f} detik")
+    ### **c. Alur penggunaan dashboard**
+    1. Pengguna membuka aplikasi Streamlit.  
+    2. Mengunggah gambar wajah pada bagian “Deteksi Wajah”.  
+    3. Model YOLO melakukan inferensi dan menampilkan hasil deteksi.  
+    4. Sistem menampilkan waktu inferensi dan hasil crop wajah.  
+    5. Pengguna dapat mengunduh gambar hasil deteksi.  
+    6. Dashboard menampilkan pesan penutup sebagai akhir proses.
 
-            except ValueError as e:
-                st.error(f"Terjadi error saat prediksi: {e}")
+    ---
 
-# ======================================
-# Footer
-# ======================================
+    ### **Kesimpulan**
+    Dashboard ini mampu melakukan deteksi wajah secara cepat dan akurat menggunakan model YOLO, 
+    dengan antarmuka interaktif yang dibangun di Streamlit.
+    """, unsafe_allow_html=True)
+
+# ======================================================
+# FOOTER
+# ======================================================
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center; color: gray;'>Made with ❤️ using Streamlit, YOLO & TensorFlow</p>",
+    "<p style='text-align: center; color: gray;'>Made with ❤️ using Streamlit & YOLO</p>",
     unsafe_allow_html=True
 )
