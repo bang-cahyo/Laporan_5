@@ -2,82 +2,98 @@ import streamlit as st
 from ultralytics import YOLO
 import numpy as np
 from PIL import Image
-import time
 import io
+import time
 
 # ======================================
-# Konfigurasi Tampilan
+# Konfigurasi Tampilan Halaman
 # ======================================
 st.set_page_config(
-    page_title="Deteksi Wajah YOLO",
-    page_icon="🧠",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="YOLO Face Detection",
+    page_icon="🤖",
+    layout="wide"
 )
 
 # ======================================
-# Sidebar - Toggle Mode
+# CSS — Tampilan Futuristik NFT Style
 # ======================================
-st.sidebar.title("⚙️ Pengaturan")
-mode = st.sidebar.radio("🌗 Mode Tampilan", ["Dark Mode", "Light Mode"])
-uploaded_file = st.sidebar.file_uploader("📁 Unggah Gambar", type=["jpg", "jpeg", "png"])
-st.sidebar.info("Unggah gambar, sistem akan mendeteksi wajah secara otomatis.")
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
-# ======================================
-# CSS Dasar + Tema Dinamis
-# ======================================
-def apply_theme(mode: str):
-    if mode == "Dark Mode":
-        bg = "#0d1117"
-        text = "#f0f0f0"
-        card = "#161b22"
-        accent = "#00c8ff"
-    else:
-        bg = "#f9f9f9"
-        text = "#1c1c1c"
-        card = "#ffffff"
-        accent = "#0078ff"
+body, .stApp {
+    background: radial-gradient(circle at top left, #0b0f19, #0d1532, #121b3e);
+    color: #eaeaea;
+    font-family: 'Poppins', sans-serif;
+}
 
-    st.markdown(f"""
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-        .stApp {{
-            background-color: {bg};
-            color: {text};
-            font-family: 'Poppins', sans-serif;
-            transition: all 0.5s ease-in-out;
-        }}
-        h1, h2, h3, h4, h5 {{
-            color: {accent};
-        }}
-        .face-container {{
-            padding: 10px;
-            border-radius: 10px;
-            background-color: {card};
-            box-shadow: 0 0 8px rgba(0,0,0,0.3);
-            margin-bottom: 15px;
-        }}
-        .shimmer {{
-            height: 250px;
-            background: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0.05) 25%,
-                rgba(255, 255, 255, 0.15) 50%,
-                rgba(255, 255, 255, 0.05) 75%
-            );
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 10px;
-            margin-top: 10px;
-        }}
-        @keyframes shimmer {{
-            0% {{background-position: 200% 0;}}
-            100% {{background-position: -200% 0;}}
-        }}
-        </style>
-    """, unsafe_allow_html=True)
+/* Hero Section */
+h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #00e0ff, #7a00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
-apply_theme(mode)
+/* Subtitle */
+.subtext {
+    font-size: 1.1rem;
+    color: #b0b0b0;
+    margin-bottom: 25px;
+}
+
+/* Tombol Utama */
+.stButton>button {
+    background: linear-gradient(90deg, #00e0ff, #7a00ff);
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    padding: 0.8em 2em;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+.stButton>button:hover {
+    box-shadow: 0 0 20px #00e0ff80;
+    transform: translateY(-2px);
+}
+
+/* Card hasil deteksi */
+.result-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.4);
+}
+
+/* Gambar */
+.stImage > img {
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+/* Info */
+.info-box {
+    background: linear-gradient(90deg, #151a28, #1e2440);
+    border-radius: 10px;
+    padding: 12px 18px;
+    color: #bcd4ff;
+    font-size: 0.95rem;
+    margin-top: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+footer {
+    text-align: center;
+    color: gray;
+    margin-top: 50px;
+    font-size: 0.9rem;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ======================================
 # Load Model YOLO
@@ -89,77 +105,60 @@ def load_yolo_model():
 model = load_yolo_model()
 
 # ======================================
-# Header
+# Bagian UI
 # ======================================
-st.markdown("<h1 class='fade-in'>🧠 Deteksi Wajah Otomatis</h1>", unsafe_allow_html=True)
-st.caption("Gunakan model **YOLO** untuk mendeteksi wajah secara cepat dan akurat.")
+col1, col2 = st.columns([1.2, 1], gap="large")
+
+with col1:
+    st.markdown("<h1>Face Detection Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>", unsafe_allow_html=True)
+    
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+    detect_button = st.button("🚀 Detect Faces")
+
+with col2:
+    st.empty()
 
 # ======================================
-# Fungsi Download
+# Deteksi Wajah
 # ======================================
-def get_downloadable_image(image_array):
-    img_pil = Image.fromarray(image_array)
-    buf = io.BytesIO()
-    img_pil.save(buf, format="PNG")
-    return buf.getvalue()
-
-# ======================================
-# Konten Utama
-# ======================================
-if uploaded_file:
+if detect_button and uploaded_file:
     img = Image.open(uploaded_file).convert("RGB")
-    img_cv2 = np.array(img)
+    img_np = np.array(img)
 
-    col1, col2 = st.columns([1, 1], gap="large")
-
-    with col1:
-        st.markdown("### 🖼️ Gambar Asli")
-        st.image(img, use_container_width=True, caption="Gambar input dari pengguna")
-
-    with col2:
-        st.markdown("### 📦 Hasil Deteksi Wajah")
-
-        shimmer_placeholder = st.empty()
-        shimmer_placeholder.markdown("<div class='shimmer'></div>", unsafe_allow_html=True)
-
-        # Deteksi YOLO
+    with st.spinner("Detecting faces... 🔍"):
         start_time = time.time()
-        results = model(img_cv2)
+        results = model(img_np)
         inference_time = time.time() - start_time
 
-        result_img = results[0].plot()
-        shimmer_placeholder.empty()
-        st.image(result_img, use_container_width=True, caption="Hasil deteksi wajah")
-        st.markdown(f"🕒 **Waktu inferensi:** {inference_time:.2f} detik")
+    result_img = results[0].plot()
 
-        # Tombol download
-        st.download_button(
-            label="💾 Unduh Hasil Deteksi",
-            data=get_downloadable_image(result_img),
-            file_name="hasil_deteksi_wajah.png",
-            mime="image/png"
-        )
+    st.markdown("<div class='result-card'>", unsafe_allow_html=True)
+    st.image(result_img, caption="Detection Result", use_container_width=True)
+    st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
+    st.download_button(
+        label="💾 Download Result",
+        data=lambda: io.BytesIO(Image.fromarray(result_img).tobytes()),
+        file_name="face_detection_result.png",
+        mime="image/png"
+    )
 
-        # Tampilkan crop wajah
-        boxes = results[0].boxes.xyxy
-        if len(boxes) > 0:
-            st.markdown("#### 🔍 Wajah Terdeteksi:")
-            for i, box in enumerate(boxes):
-                x1, y1, x2, y2 = map(int, box[:4])
-                face_crop = img_cv2[y1:y2, x1:x2]
-                face_pil = Image.fromarray(face_crop)
+    # Tampilkan wajah terdeteksi
+    boxes = results[0].boxes.xyxy
+    if len(boxes) > 0:
+        st.markdown("### Detected Faces")
+        face_cols = st.columns(min(4, len(boxes)))
+        for i, box in enumerate(boxes):
+            x1, y1, x2, y2 = map(int, box[:4])
+            face_crop = img_np[y1:y2, x1:x2]
+            face_img = Image.fromarray(face_crop)
+            face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-                with st.container():
-                    st.markdown(f"<div class='face-container'>Wajah {i+1}</div>", unsafe_allow_html=True)
-                    st.image(face_pil, width=180, caption=f"Wajah {i+1}")
-else:
-    st.markdown("<p>⬆️ Unggah gambar di panel kiri untuk memulai deteksi wajah.</p>", unsafe_allow_html=True)
+elif not uploaded_file:
+    st.info("📁 Please upload an image to begin detection.")
 
 # ======================================
 # Footer
 # ======================================
-st.markdown("---")
-st.markdown(
-    "<p style='text-align: center; color: gray;'>Made with ❤️ using Streamlit & YOLO — by Cahyo</p>",
-    unsafe_allow_html=True
-)
+st.markdown("<footer>Made with ❤️ using Streamlit & YOLO — Inspired by NFT UI Design</footer>", unsafe_allow_html=True)
