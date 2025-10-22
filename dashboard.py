@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # ======================================
-# CSS — Tampilan Futuristik NFT Style
+# CSS — Tampilan Futuristik + Neon Typing + Responsif
 # ======================================
 st.markdown("""
 <style>
@@ -43,7 +43,27 @@ h1 {
     margin-bottom: 25px;
 }
 
-/* Credit name */
+/* Neon Typing Animation */
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+@keyframes blink {
+  50% { border-color: transparent }
+}
+.neon-name {
+  font-size: 1.2rem;
+  color: #00e0ff;
+  font-weight: 700;
+  border-right: 2px solid #00e0ff;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 0;
+  animation: typing 2s steps(22) forwards, blink 0.75s step-end infinite;
+  margin-bottom: 15px;
+}
+
+/* Credit name (static) */
 .credit {
     font-size: 1rem;
     font-weight: 600;
@@ -101,9 +121,15 @@ footer {
     margin-top: 50px;
     font-size: 0.9rem;
 }
+
+/* Responsif untuk HP */
+@media (max-width: 768px){
+    h1 { font-size: 2rem; }
+    .subtext { font-size: 1rem; }
+    .stButton>button { padding: 0.6em 1.5em; font-size: 0.9rem; }
+}
 </style>
 """, unsafe_allow_html=True)
-
 
 # ======================================
 # Fungsi tambahan untuk download hasil deteksi
@@ -115,7 +141,6 @@ def get_downloadable_image(np_img):
     image.save(buf, format="PNG")
     return buf.getvalue()
 
-
 # ======================================
 # Load Model YOLO
 # ======================================
@@ -125,7 +150,6 @@ def load_yolo_model():
 
 model = load_yolo_model()
 
-
 # ======================================
 # Bagian UI — Tampilan Utama
 # ======================================
@@ -133,15 +157,24 @@ col1, col2 = st.columns([1.2, 1], gap="large")
 
 with col1:
     st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='credit'>👨‍💻 Developed by <b>Heru Bagus Cahyo</b></p>", unsafe_allow_html=True)
+    # Animasi teks neon untuk nama developer
+    st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
     st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>", unsafe_allow_html=True)
     
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
     detect_button = st.button("🚀 Detect Faces")
 
+    # Tombol About Me
+    if st.button("💾 About Me"):
+        st.info("""
+        **Nama:** Heru Bagus Cahyo  
+        **Pekerjaan:** Data Scientist / AI Enthusiast  
+        **Email:** herubagus@example.com  
+        **Instagram:** @herubaguscahyo  
+        """)
+        
 with col2:
     st.empty()
-
 
 # ======================================
 # Deteksi Wajah
@@ -183,7 +216,6 @@ if detect_button and uploaded_file:
 
 elif not uploaded_file:
     st.info("📁 Please upload an image to begin detection.")
-
 
 # ======================================
 # Footer — Credit Pembuat
