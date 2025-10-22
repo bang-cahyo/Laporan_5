@@ -112,7 +112,7 @@ if uploaded_file is not None:
                 mime="image/png"
             )
 
-            # Crop wajah dari hasil deteksi (kalau ingin digunakan)
+            # Crop wajah dari hasil deteksi
             boxes = results[0].boxes.xyxy
             if len(boxes) > 0:
                 st.markdown("### 🔍 Wajah Terdeteksi:")
@@ -122,36 +122,36 @@ if uploaded_file is not None:
                     face_pil = Image.fromarray(face_crop)
                     st.image(face_pil, caption=f"Wajah {i+1}", width=200)
 
-       elif menu == "🧩 Klasifikasi Gambar":
-    st.subheader("📊 Hasil Klasifikasi Gambar")
+        elif menu == "🧩 Klasifikasi Ekspresi":
+            st.subheader("📊 Hasil Klasifikasi Ekspresi")
 
-    # Deteksi input shape model
-    model_input_shape = classifier.input_shape[1:3]
-    st.caption(f"Model ini menerima input gambar berukuran: {model_input_shape}")
+            # Deteksi input shape model
+            model_input_shape = classifier.input_shape[1:3]
+            st.caption(f"Model ini menerima input gambar berukuran: {model_input_shape}")
 
-    # Preprocessing
-    img_resized = img.resize(model_input_shape)
-    img_array = image.img_to_array(img_resized)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array = img_array / 255.0
+            # Preprocessing
+            img_resized = img.resize(model_input_shape)
+            img_array = image.img_to_array(img_resized)
+            img_array = np.expand_dims(img_array, axis=0)
+            img_array = img_array / 255.0
 
-    # Prediksi
-    start_time = time.time()
-    try:
-        prediction = classifier.predict(img_array)
-        inference_time = time.time() - start_time
+            # Prediksi
+            start_time = time.time()
+            try:
+                prediction = classifier.predict(img_array)
+                inference_time = time.time() - start_time
 
-        class_index = np.argmax(prediction)
-        class_label = label_dict.get(class_index, f"Class {class_index}")
-        confidence = float(np.max(prediction))
+                class_index = np.argmax(prediction)
+                class_label = label_dict.get(class_index, f"Class {class_index}")
+                confidence = float(np.max(prediction))
 
-        st.markdown(f"### 🏷️ Kelas: **{class_label}**")
-        st.markdown(f"**Probabilitas:** {confidence*100:.2f}%")
-        st.progress(confidence)
-        st.success(f"Waktu inferensi: {inference_time:.2f} detik")
-    except ValueError as e:
-        st.error(f"Terjadi error saat prediksi: {e}")
+                st.markdown(f"### 🏷️ Ekspresi: **{class_label}**")
+                st.markdown(f"**Probabilitas:** {confidence*100:.2f}%")
+                st.progress(confidence)
+                st.success(f"Waktu inferensi: {inference_time:.2f} detik")
 
+            except ValueError as e:
+                st.error(f"Terjadi error saat prediksi: {e}")
 
 # ======================================
 # Footer
