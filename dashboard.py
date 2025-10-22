@@ -7,16 +7,15 @@ import time
 import cv2
 
 # ======================================================
-# KONFIGURASI DASHBOARD
+# KONFIGURASI DASAR DASHBOARD
 # ======================================================
 st.set_page_config(
-    page_title="Deteksi Wajah Otomatis",
+    page_title="Dashboard Deteksi Wajah",
     page_icon="🧠",
     layout="wide",
-    initial_sidebar_state="expanded"
 )
 
-# Custom Dark Mode Elegan
+# Custom Dark Mode + Style
 st.markdown("""
     <style>
     body {
@@ -35,18 +34,15 @@ st.markdown("""
         width: 100%;
         font-weight: bold;
     }
-    .stProgress > div > div > div {
-        background-color: #00ccff;
-    }
     </style>
 """, unsafe_allow_html=True)
 
 # ======================================================
-# LOAD MODEL YOLO (CACHED)
+# LOAD MODEL YOLO (dengan cache biar cepat)
 # ======================================================
 @st.cache_resource
 def load_model():
-    model = YOLO("model/Cahyo_Laporan4.pt")  # ganti sesuai nama model kamu
+    model = YOLO("model/Cahyo_Laporan4.pt")  # ganti dengan model kamu
     return model
 
 yolo_model = load_model()
@@ -55,7 +51,7 @@ yolo_model = load_model()
 # FUNGSI UTILITAS
 # ======================================================
 def get_downloadable_image(image_array):
-    """Mengonversi array gambar menjadi file PNG agar bisa diunduh."""
+    """Mengonversi array gambar ke file PNG agar bisa diunduh."""
     img_pil = Image.fromarray(image_array)
     buf = io.BytesIO()
     img_pil.save(buf, format="PNG")
@@ -65,110 +61,100 @@ def get_downloadable_image(image_array):
 # ANTARMUKA UTAMA
 # ======================================================
 st.title("🧠 Dashboard Deteksi Wajah Otomatis")
-st.caption("Aplikasi berbasis Streamlit dan YOLO untuk mendeteksi wajah pada gambar")
+st.caption("Aplikasi berbasis YOLO dan Streamlit untuk mendeteksi wajah secara real-time dari gambar yang diunggah.")
 
-# Sidebar Menu
-st.sidebar.header("📂 Menu")
-menu = st.sidebar.radio("Pilih Halaman:", ["Deteksi Wajah", "Penjelasan Fitur Dashboard"])
+# Fitur utama: unggah gambar
+uploaded_file = st.file_uploader("📂 Unggah gambar (format: JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"])
 
-# ======================================================
-# MODE 1: DETEKSI WAJAH
-# ======================================================
-if menu == "Deteksi Wajah":
-    st.subheader("🔍 Unggah Gambar untuk Deteksi Wajah")
-    uploaded_file = st.file_uploader("Pilih gambar (format: JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"])
+if uploaded_file is not None:
+    img = Image.open(uploaded_file).convert("RGB")
+    img_cv2 = np.array(img)
 
-    if uploaded_file is not None:
-        img = Image.open(uploaded_file).convert("RGB")
-        img_cv2 = np.array(img)
+    col1, col2 = st.columns(2)
 
-        # Dua kolom: kiri (gambar asli), kanan (hasil deteksi)
-        col1, col2 = st.columns(2)
+    with col1:
+        st.image(img, caption="🖼️ Gambar Asli", use_container_width=True)
 
-        with col1:
-            st.image(img, caption="🖼️ Gambar Asli", use_container_width=True)
+    with col2:
+        st.write("📦 **Hasil Deteksi Wajah**")
+        start_time = time.time()
+        results = yolo_model(img_cv2)
+        inference_time = time.time() - start_time
 
-        with col2:
-            st.write("📦 **Hasil Deteksi Wajah**")
-            start_time = time.time()
-            results = yolo_model(img_cv2)
-            inference_time = time.time() - start_time
+        # Ambil hasil deteksi
+        result_img = results[0].plot()
+        st.image(result_img, use_container_width=True)
+        st.success(f"Waktu inferensi: {inference_time:.2f} detik")
 
-            # Ambil hasil deteksi
-            result_img = results[0].plot()
-            st.image(result_img, use_container_width=True)
-            st.success(f"Waktu inferensi: {inference_time:.2f} detik")
+        # Tombol unduh hasil deteksi
+        st.download_button(
+            label="💾 Unduh Hasil Deteksi",
+            data=get_downloadable_image(result_img),
+            file_name="hasil_deteksi_wajah.png",
+            mime="image/png"
+        )
 
-            # Tombol unduh
-            st.download_button(
-                label="💾 Unduh Hasil Deteksi",
-                data=get_downloadable_image(result_img),
-                file_name="hasil_deteksi_wajah.png",
-                mime="image/png"
-            )
-
-        # ======================================================
-        # Crop wajah hasil deteksi (jika ada)
-        # ======================================================
-        boxes = results[0].boxes.xyxy
-        if len(boxes) > 0:
-            st.markdown("### 👤 Wajah yang Terdeteksi:")
-            cols = st.columns(3)
-            for i, box in enumerate(boxes):
-                x1, y1, x2, y2 = map(int, box[:4])
-                face_crop = img_cv2[y1:y2, x1:x2]
-                if face_crop.size > 0:
-                    face_pil = Image.fromarray(face_crop)
-                    with cols[i % 3]:
-                        st.image(face_pil, caption=f"Wajah {i+1}", width=180)
-        else:
-            st.warning("⚠️ Tidak ada wajah terdeteksi pada gambar ini.")
+    # ======================================================
+    # Crop wajah hasil deteksi (jika ada)
+    # ======================================================
+    boxes = results[0].boxes.xyxy
+    if len(boxes) > 0:
+        st.markdown("### 👤 Wajah yang Terdeteksi:")
+        cols = st.columns(3)
+        for i, box in enumerate(boxes):
+            x1, y1, x2, y2 = map(int, box[:4])
+            face_crop = img_cv2[y1:y2, x1:x2]
+            if face_crop.size > 0:
+                face_pil = Image.fromarray(face_crop)
+                with cols[i % 3]:
+                    st.image(face_pil, caption=f"Wajah {i+1}", width=180)
+    else:
+        st.warning("⚠️ Tidak ada wajah terdeteksi pada gambar ini.")
 
 # ======================================================
-# MODE 2: PENJELASAN FITUR DASHBOARD
+# PENJELASAN FITUR DASHBOARD (untuk laporan tugas)
 # ======================================================
-elif menu == "Penjelasan Fitur Dashboard":
-    st.header("📘 Penjelasan Fitur Dashboard")
+st.markdown("---")
+st.header("📘 Penjelasan Fitur Dashboard")
 
-    st.markdown("""
-    ### **a. Fitur-fitur utama**
-    1. **Unggah Gambar** — Menggunakan `st.file_uploader` untuk mengunggah gambar wajah.
-    2. **Deteksi Wajah (YOLO)** — Model YOLO mendeteksi wajah dan menampilkan bounding box.
-    3. **Waktu Inferensi** — Mengukur waktu proses model dalam mendeteksi wajah.
-    4. **Crop Wajah** — Menampilkan potongan (crop) setiap wajah yang terdeteksi.
-    5. **Unduh Hasil Deteksi** — Tombol `st.download_button` untuk menyimpan hasil deteksi.
-    6. **Tampilan Dark Mode Elegan** — Menggunakan *custom CSS* agar tampilan lebih profesional.
+st.markdown("""
+### **a. Fitur-fitur utama**
+1. **Unggah Gambar** — Menggunakan `st.file_uploader` untuk memilih gambar dari perangkat pengguna.  
+2. **Deteksi Wajah (YOLO)** — Model YOLO mendeteksi area wajah dan menampilkan bounding box di sekitar wajah.  
+3. **Waktu Inferensi** — Menampilkan waktu proses deteksi agar pengguna tahu performa model.  
+4. **Crop Wajah** — Menampilkan potongan wajah yang berhasil terdeteksi secara otomatis.  
+5. **Unduh Hasil Deteksi** — Tombol `st.download_button` untuk menyimpan hasil deteksi ke komputer.  
+6. **Tampilan Dark Mode** — Menggunakan *custom CSS* agar dashboard terlihat profesional dan nyaman di mata.
 
-    ---
+---
 
-    ### **b. Komponen Streamlit yang digunakan**
-    | Komponen | Fungsi |
-    |-----------|--------|
-    | `st.file_uploader` | Mengunggah gambar dari perangkat |
-    | `st.image` | Menampilkan gambar dan hasil deteksi |
-    | `st.columns` | Membagi layout menjadi dua kolom |
-    | `st.download_button` | Mengunduh hasil deteksi |
-    | `st.cache_resource` | Menyimpan model YOLO di cache agar tidak diload ulang |
-    | `st.success`, `st.warning` | Menampilkan notifikasi hasil |
-    | `st.sidebar.radio` | Menu navigasi antar halaman |
-    | `st.markdown` | Menulis teks dan tabel deskriptif |
+### **b. Komponen Streamlit yang digunakan**
+| Komponen | Fungsi |
+|-----------|--------|
+| `st.file_uploader` | Mengunggah gambar dari perangkat |
+| `st.image` | Menampilkan gambar dan hasil deteksi |
+| `st.columns` | Membagi layout menjadi dua kolom |
+| `st.download_button` | Menyediakan tombol untuk mengunduh hasil deteksi |
+| `st.cache_resource` | Menyimpan model di cache agar tidak diload ulang |
+| `st.success`, `st.warning` | Memberi umpan balik hasil deteksi |
+| `st.markdown` | Menulis teks deskriptif dan tabel |
 
-    ---
+---
 
-    ### **c. Alur penggunaan dashboard**
-    1. Pengguna membuka aplikasi Streamlit.  
-    2. Mengunggah gambar wajah pada bagian “Deteksi Wajah”.  
-    3. Model YOLO melakukan inferensi dan menampilkan hasil deteksi.  
-    4. Sistem menampilkan waktu inferensi dan hasil crop wajah.  
-    5. Pengguna dapat mengunduh gambar hasil deteksi.  
-    6. Dashboard menampilkan pesan penutup sebagai akhir proses.
+### **c. Alur penggunaan dashboard**
+1. Pengguna membuka aplikasi Streamlit.  
+2. Mengunggah gambar pada bagian “Unggah Gambar”.  
+3. Model YOLO melakukan deteksi wajah secara otomatis.  
+4. Hasil deteksi dan waktu inferensi ditampilkan di sisi kanan.  
+5. Jika wajah terdeteksi, potongan wajah (crop) akan muncul di bawahnya.  
+6. Pengguna dapat mengunduh hasil deteksi dalam format PNG.
 
-    ---
+---
 
-    ### **Kesimpulan**
-    Dashboard ini mampu melakukan deteksi wajah secara cepat dan akurat menggunakan model YOLO, 
-    dengan antarmuka interaktif yang dibangun di Streamlit.
-    """, unsafe_allow_html=True)
+### **Kesimpulan**
+Dashboard ini mampu melakukan deteksi wajah secara otomatis menggunakan model YOLO.  
+Proses inferensi cepat, hasil visualisasi jelas, dan tampilannya dibuat profesional dengan Streamlit.
+""")
 
 # ======================================================
 # FOOTER
