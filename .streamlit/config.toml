@@ -1,3 +1,6 @@
+[server]
+fileWatcherType = "poll"
+
 [theme]
 primaryColor="#00e0ff"
 backgroundColor="#0d1117"
