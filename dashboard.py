@@ -279,38 +279,57 @@ def show_detect(model):
                 mime="image/png"
             )
 
+            # Tampilkan Crop Wajah Detected
+            if len(boxes) > 0:
+                st.markdown("### Detected Faces")
+                face_cols = st.columns(min(4, len(boxes)))
+                for i, box in enumerate(boxes):
+                    x1, y1, x2, y2 = map(int, box[:4])
+                    face_crop = img_np[y1:y2, x1:x2]
+                    face_img = Image.fromarray(face_crop)
+                    face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
+            else:
+                st.warning("⚠️ No faces detected in this image.")
+
     elif pilih_input == "Gunakan Kamera":
-        st.info("📸 Real-time Kamera (Ctrl+C untuk stop jika lokal)")
-        frame_placeholder = st.empty()
+        st.info("📸 Klik 'Ambil Foto' untuk capture gambar dari kamera perangkat.")
+        cam_image = st.camera_input("Ambil Foto")
 
-        try:
-            cap = cv2.VideoCapture(0)  # webcam
-            if not cap.isOpened():
-                st.warning("⚠️ Kamera tidak ditemukan. Pastikan kamera terhubung dan jalankan di lokal.")
-                return
+        if cam_image:
+            img = Image.open(cam_image).convert("RGB")
+            img_np = np.array(img)
+            img_np_resized = letterbox_image(img_np, target_size=(640,640))
 
-            while True:
-                ret, frame = cap.read()
-                if not ret:
-                    st.warning("⚠️ Tidak bisa membaca frame dari kamera.")
-                    break
+            with st.spinner("Detecting faces... 🔍"):
+                start_time = time.time()
+                results = model(img_np_resized, conf=0.15, iou=0.3)
+                inference_time = time.time() - start_time
 
-                # Preprocessing
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                frame_resized = letterbox_image(frame_rgb, target_size=(640,640))
+            result_img = results[0].plot()
+            boxes = results[0].boxes.xyxy
 
-                # Deteksi wajah
-                results = model(frame_resized, conf=0.15, iou=0.3)
-                result_frame = results[0].plot()
+            st.image(result_img, caption="Hasil Deteksi Kamera", use_column_width=True)
+            st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
 
-                # Tampilkan di Streamlit
-                frame_placeholder.image(result_frame, use_column_width=True)
+            # Tombol Download
+            st.download_button(
+                label="💾 Download Detection Result",
+                data=get_downloadable_image(result_img),
+                file_name="hasil_deteksi_kamera.png",
+                mime="image/png"
+            )
 
-        except Exception as e:
-            st.error(f"Terjadi kesalahan: {e}")
-        finally:
-            cap.release()
-
+            # Tampilkan Crop Wajah Detected
+            if len(boxes) > 0:
+                st.markdown("### Detected Faces")
+                face_cols = st.columns(min(4, len(boxes)))
+                for i, box in enumerate(boxes):
+                    x1, y1, x2, y2 = map(int, box[:4])
+                    face_crop = img_np[y1:y2, x1:x2]
+                    face_img = Image.fromarray(face_crop)
+                    face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
+            else:
+                st.warning("⚠️ No faces detected in this image.")
 
 
 # Render halaman sesuai pilihan
@@ -334,4 +353,3 @@ st.markdown(f"""
     <div style="font-size:0.85rem; color:#bcd4ff;">
 </footer>
 """, unsafe_allow_html=True)
-
