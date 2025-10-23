@@ -230,7 +230,6 @@ def show_about():
 # ======================================
 # Halaman Deteksi Wajah
 # ======================================
-
 def show_detect(model):
     st.markdown('<h2 class="neon-title">YOLO Face Detection</h2>', unsafe_allow_html=True)
 
@@ -247,8 +246,8 @@ def show_detect(model):
 
             img = Image.open(uploaded_file).convert("RGB")
             img_np = np.array(img)
-            
-            # Resize untuk deteksi model saja
+
+            # Resize untuk deteksi YOLO
             img_np_resized = letterbox_image(img_np, target_size=(640,640))
 
             # Deteksi YOLO
@@ -257,15 +256,17 @@ def show_detect(model):
                 results = model(img_np_resized, conf=0.15, iou=0.3)
                 inference_time = time.time() - start_time
 
-            # Ambil hasil deteksi dan kembalikan ke ukuran asli
-            result_img_resized = results[0].plot()
-            result_img = cv2.resize(result_img_resized, (img_np.shape[1], img_np.shape[0]))
+            # Hasil deteksi model (plot) berukuran 640x640
+            result_img = results[0].plot()
 
-            # Before / After
+            # Resize gambar input supaya ukurannya sama dengan hasil deteksi
+            img_resized_for_display = cv2.resize(img_np, (result_img.shape[1], result_img.shape[0]))
+
+            # Tampilkan Before / After dengan ukuran sama
             st.markdown("<div class='result-card'>", unsafe_allow_html=True)
             col_before, col_after = st.columns(2)
             with col_before:
-                st.image(img, caption="Before Detection", use_container_width=True)
+                st.image(img_resized_for_display, caption="Before Detection", use_container_width=True)
             with col_after:
                 st.image(result_img, caption="After Detection", use_container_width=True)
             st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
@@ -297,11 +298,12 @@ def show_detect(model):
                 results = model(img_np_resized, conf=0.15, iou=0.3)
                 inference_time = time.time() - start_time
 
-            result_img_resized = results[0].plot()
-            result_img = cv2.resize(result_img_resized, (img_np.shape[1], img_np.shape[0]))
+            result_img = results[0].plot()
+            img_resized_for_display = cv2.resize(img_np, (result_img.shape[1], result_img.shape[0]))
 
             with col_result:
-                st.image(result_img, caption="Hasil Deteksi Kamera", use_container_width=True)
+                st.image(img_resized_for_display, caption="Before Detection", use_container_width=True)
+                st.image(result_img, caption="After Detection", use_container_width=True)
                 st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
 
                 st.download_button(
@@ -310,6 +312,7 @@ def show_detect(model):
                     file_name="hasil_deteksi_kamera.png",
                     mime="image/png"
                 )
+
 
 
 # Render halaman sesuai pilihan
