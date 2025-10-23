@@ -108,21 +108,52 @@ with col2:
     show_detect = st.button("Deteksi Wajah")
 
 # ======================================
-# About Me
+# About Me & About Website
 # ======================================
-if show_about:
-    st.markdown("<h1>About </h1>", unsafe_allow_html=True)
-    col1_bio, col2_bio = st.columns([1,1])
-    with col1_bio:
-        st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
-    with col2_bio:
-        st.info("""
-        **Nama:** Heru Bagus Cahyo  
-        **Jurusan:** Statistika  
-        **Angkatan:** 2022  
-        **Email:** herubagusapk@gmail.com  
-        **Instagram:** @herubaguscahyo  
-        """)
+if page == "About":
+    st.markdown("<h1>About</h1>", unsafe_allow_html=True)
+
+    # Tombol navigasi vertikal untuk sub-about
+    col_nav, col_content = st.columns([1,3])
+    with col_nav:
+        about_option = st.radio("Pilih:", ["Tentang Penulis", "Tentang Website"])
+
+    with col_content:
+        if about_option == "Tentang Penulis":
+            col1_bio, col2_bio = st.columns([1,1])
+            with col1_bio:
+                st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
+            with col2_bio:
+                st.info("""
+                **Nama:** Heru Bagus Cahyo  
+                **Jurusan:** Statistika  
+                **Angkatan:** 2022  
+                **Email:** herubagusapk@gmail.com  
+                **Instagram:** @herubaguscahyo  
+                """)
+        elif about_option == "Tentang Website":
+            st.markdown("""
+            **Tentang Website YOLO Face Detection**  
+
+            Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia.  
+            Tujuan website ini adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat, tanpa perlu menginstal software tambahan atau memahami pemrograman.  
+
+            **Fitur Utama:**  
+            - Upload gambar format JPG, JPEG, atau PNG  
+            - Deteksi wajah otomatis, menampilkan hasil Before/After secara bersebelahan  
+            - Download hasil deteksi wajah dalam format PNG  
+            - Tampilan UI futuristik dengan animasi neon untuk pengalaman pengguna yang menarik  
+
+            **Cara Penggunaan:**  
+            1. Pilih menu **Deteksi Wajah** di atas.  
+            2. Klik tombol **Upload an image** dan pilih gambar dari perangkat Anda.  
+            3. Klik tombol **🚀 Detect Faces** untuk memulai deteksi.  
+            4. Hasil deteksi akan muncul berdampingan: sebelah kiri **Before** (gambar asli), sebelah kanan **After** (gambar dengan bounding box wajah).  
+            5. Jika ingin menyimpan hasil, klik tombol **Download Detection Result**.  
+
+            Website ini dibuat oleh **Heru Bagus Cahyo** menggunakan **Streamlit** dan **Ultralytics YOLOv8**, sehingga dapat berjalan di browser tanpa instalasi tambahan.
+            """)
+
 
 # ======================================
 # Deteksi Wajah
