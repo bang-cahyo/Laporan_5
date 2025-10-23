@@ -32,6 +32,11 @@ h1 {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+.subtext {
+    font-size: 1.1rem;
+    color: #b0b0b0;
+    margin-bottom: 25px;
+}
 .stButton>button {
     background: linear-gradient(90deg, #00e0ff, #7a00ff);
     color: white;
@@ -98,31 +103,25 @@ def load_yolo_model():
 model = load_yolo_model()
 
 # ======================================
-# Session state untuk navigasi
-# ======================================
-st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
-st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
-st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>", unsafe_allow_html=True)
-
-# Tombol navigasi
-col1, col2 = st.columns([1,1])
-with col1:
-    if st.button("About Me"):
-        st.session_state.page = "about"
-with col2:
-    if st.button("Deteksi Wajah"):
-        st.session_state.page = "detect"
-
-# ======================================
-# Session state untuk navigasi
+# Session State Default
 # ======================================
 if "page" not in st.session_state:
-    st.session_state.page = "home"  # default halaman
+    st.session_state.page = "home"  # halaman awal
+if "about_option" not in st.session_state:
+    st.session_state.about_option = "Tentang Website"
 
-# Tombol Navigasi
+# ======================================
+# Header UI/UX
+# ======================================
+st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
+st.markdown("<div class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</div>", unsafe_allow_html=True)
+
+# ======================================
+# Navigasi Tombol
+# ======================================
 col1, col2 = st.columns([1,1])
 with col1:
-    if st.button("About Me"):
+    if st.button("About Me / Website"):
         st.session_state.page = "about"
 with col2:
     if st.button("Deteksi Wajah"):
@@ -136,28 +135,32 @@ if st.session_state.page == "about":
     
     col_nav, col_content = st.columns([1,3])
     with col_nav:
-        about_option = st.radio("Pilih:", ["Tentang Website", "Tentang Penulis"], index=0)  # default Website
-    
+        st.session_state.about_option = st.radio(
+            "Pilih:", 
+            ["Tentang Website", "Tentang Penulis"], 
+            index=0 if st.session_state.about_option=="Tentang Website" else 1
+        )
+
     with col_content:
-        if about_option == "Tentang Website":
+        if st.session_state.about_option == "Tentang Website":
             st.markdown("""
-            **Tentang Website YOLO Face Detection**  
+            **Tentang Website YOLO Face Detection**
 
-            Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia.  
-            Tujuan website ini adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat, tanpa perlu menginstal software tambahan atau memahami pemrograman.  
+            Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia.
+            Tujuan website ini adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat, tanpa perlu menginstal software tambahan atau memahami pemrograman.
 
-            **Fitur Utama:**  
-            - Upload gambar format JPG, JPEG, atau PNG  
-            - Deteksi wajah otomatis, menampilkan hasil Before/After secara berdampingan  
-            - Download hasil deteksi wajah dalam format PNG  
-            - Tampilan UI futuristik dengan animasi neon untuk pengalaman pengguna yang menarik  
+            **Fitur Utama:**
+            - Upload gambar format JPG, JPEG, atau PNG
+            - Deteksi wajah otomatis, menampilkan hasil Before/After secara berdampingan
+            - Download hasil deteksi wajah dalam format PNG
+            - Tampilan UI futuristik dengan animasi neon untuk pengalaman pengguna yang menarik
 
-            **Cara Penggunaan:**  
-            1. Pilih menu **Deteksi Wajah** di atas.  
-            2. Klik tombol **Upload an image** dan pilih gambar dari perangkat Anda.  
-            3. Klik tombol **🚀 Detect Faces** untuk memulai deteksi.  
-            4. Hasil deteksi akan muncul berdampingan: sebelah kiri **Before** (gambar asli), sebelah kanan **After** (gambar dengan bounding box wajah).  
-            5. Jika ingin menyimpan hasil, klik tombol **Download Detection Result**.  
+            **Cara Penggunaan:**
+            1. Pilih menu **Deteksi Wajah** di atas.
+            2. Klik tombol **Upload an image** dan pilih gambar dari perangkat Anda.
+            3. Klik tombol **🚀 Detect Faces** untuk memulai deteksi.
+            4. Hasil deteksi akan muncul berdampingan: sebelah kiri **Before** (gambar asli), sebelah kanan **After** (gambar dengan bounding box wajah).
+            5. Jika ingin menyimpan hasil, klik tombol **Download Detection Result**.
 
             Website ini dibuat oleh **Heru Bagus Cahyo** menggunakan **Streamlit** dan **Ultralytics YOLOv8**, sehingga dapat berjalan di browser tanpa instalasi tambahan.
             """)
@@ -171,39 +174,38 @@ if st.session_state.page == "about":
                 **Jurusan:** Statistika  
                 **Angkatan:** 2022  
                 **Email:** herubagusapk@gmail.com  
-                **Instagram:** @herubaguscahyo  
+                **Instagram:** @herubaguscahyo
                 """)
 
 # ======================================
 # Halaman Deteksi Wajah
 # ======================================
 elif st.session_state.page == "detect":
-    st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
-    
+    st.markdown("<h1>YOLO Face Detection</h1>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Upload an image", type=["jpg","jpeg","png"])
     detect_button = st.button("🚀 Detect Faces")
-    
+
     if detect_button and uploaded_file:
         if uploaded_file.size > 20*1024*1024:
             st.warning("⚠️ File terlalu besar, maksimal 20 MB")
         else:
             img = Image.open(uploaded_file).convert("RGB")
             img_np = np.array(img)
-            
+
             # Histogram equalization
             img_gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
             img_gray = cv2.equalizeHist(img_gray)
             img_np_eq = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2RGB)
-            
+
             img_np_resized = letterbox_image(img_np_eq, target_size=(640,640))
-            
+
             with st.spinner("Detecting faces... 🔍"):
                 start_time = time.time()
                 results = model(img_np_resized, conf=0.15, iou=0.3)
                 inference_time = time.time() - start_time
-            
+
             result_img = results[0].plot()
-            
+
             st.markdown("<div class='result-card'>", unsafe_allow_html=True)
             col_before, col_after = st.columns(2)
             with col_before:
@@ -211,7 +213,7 @@ elif st.session_state.page == "detect":
             with col_after:
                 st.image(result_img, caption="After Detection", use_column_width=True)
             st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-            
+
             st.download_button(
                 label="💾 Download Detection Result",
                 data=get_downloadable_image(result_img),
@@ -219,9 +221,7 @@ elif st.session_state.page == "detect":
                 mime="image/png"
             )
 
-# ======================================
-# Footer
-# ======================================
+
 st.markdown("""
 <footer>
     🤖 YOLO Face Detection Dashboard | Created by <b>Heru Bagus Cahyo</b><br>
