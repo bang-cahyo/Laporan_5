@@ -17,7 +17,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# CSS Futuristik / Neon
+# CSS  Neon
 st.markdown("""
 <style>
 body, .stApp {
@@ -388,8 +388,6 @@ def show_detect(model):
                     mime="image/png"
                 )
             
-
-
 
 # Routing Halaman Berdasarkan Sidebar
 if st.session_state.page == "about":
