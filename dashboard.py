@@ -232,20 +232,35 @@ def show_about():
 # ======================================
 
 def show_detect(model):
+    # ==============================
+    # 🔹 UI/UX Header & Sidebar Futuristik
+    # ==============================
+    st.markdown("<h1 style='text-align: center; color:#00e0ff;'>😃 Face Expression Detection Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #bcd4ff;'>Model: Cahyo_Laporan4.pt | Ekspresi: disgust, anger, fear, happy, pain, sad</p>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    # Sidebar untuk pengaturan
+    st.sidebar.header("⚙️ Pengaturan Deteksi")
+    confidence = st.sidebar.slider("Confidence Threshold", 0.1, 1.0, 0.5, 0.05)
+    iou_value = st.sidebar.slider("IoU Threshold", 0.1, 1.0, 0.3, 0.05)
+    pilih_input = st.sidebar.radio("Pilih Input:", ["🖼️ Upload Gambar", "📷 Gunakan Kamera"])
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("**💡 Tips:**\n- Gunakan cahaya cukup untuk hasil optimal\n- Gambar close-up wajah lebih akurat")
+
+    # ==============================
+    # 🔹 Tampilan Judul Bagian Deteksi
+    # ==============================
     st.markdown('<h2 class="neon-title">YOLO Face Detection</h2>', unsafe_allow_html=True)
 
-    # Pilih sumber input
-    pilih_input = st.radio("Pilih Sumber Input:", ["Upload Gambar", "Gunakan Kamera"])
-
-    # ==========================
+    # ==============================
     # Upload Gambar
-    # ==========================
-    if pilih_input == "Upload Gambar":
-        uploaded_file = st.file_uploader("Upload an image", type=["jpg","jpeg","png"])
+    # ==============================
+    if pilih_input == "🖼️ Upload Gambar":
+        uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
         detect_button = st.button("🚀 Detect Faces")
 
         if detect_button and uploaded_file:
-            if uploaded_file.size > 20*1024*1024:
+            if uploaded_file.size > 20 * 1024 * 1024:
                 st.warning("⚠️ File terlalu besar, maksimal 20 MB")
                 return
 
@@ -254,12 +269,11 @@ def show_detect(model):
             img_gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
             img_gray = cv2.equalizeHist(img_gray)
             img_np_eq = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2RGB)
-            img_np_resized = letterbox_image(img_np_eq, target_size=(640,640))
+            img_np_resized = letterbox_image(img_np_eq, target_size=(640, 640))
 
-            # Deteksi YOLO
             with st.spinner("Detecting faces... 🔍"):
                 start_time = time.time()
-                results = model(img_np_resized, conf=0.15, iou=0.3)
+                results = model(img_np_resized, conf=confidence, iou=iou_value)
                 inference_time = time.time() - start_time
 
             result_img_resized = results[0].plot()
@@ -268,11 +282,20 @@ def show_detect(model):
             st.markdown("<div class='result-card'>", unsafe_allow_html=True)
             col_before, col_after = st.columns(2)
             with col_before:
-                st.image(result_img_resized, caption="Before Detection", use_container_width=True)
+                st.image(img_np, caption="Before Detection", use_container_width=True)
             with col_after:
-                st.markdown("<br>", unsafe_allow_html=True)  # Sedikit jarak
                 st.image(result_img_resized, caption="After Detection", use_container_width=True)
+            
             st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
+
+            # Ekstraksi ekspresi (kalau tersedia)
+            if results[0].boxes is not None and len(results[0].boxes) > 0:
+                detected_expressions = [results[0].names[int(cls)] for cls in results[0].boxes.cls]
+                unique_expressions = sorted(set(detected_expressions))
+                st.markdown(
+                    f"<div class='info-box'>😃 Ekspresi Terdeteksi: {', '.join(unique_expressions)}</div>", 
+                    unsafe_allow_html=True
+                )
 
             # Tombol Download
             st.download_button(
@@ -282,62 +305,49 @@ def show_detect(model):
                 mime="image/png"
             )
 
-    # ==========================
+    # ==============================
     # Gunakan Kamera
-    # ==========================
-    elif pilih_input == "Gunakan Kamera":
+    # ==============================
+    elif pilih_input == "📷 Gunakan Kamera":
         st.info("📸 Gunakan kamera untuk capture gambar, hasil deteksi muncul di kanan.")
 
-        # Buat dua kolom: kiri kamera, kanan hasil deteksi
         col_cam, col_after = st.columns(2)
-
         with col_cam:
             cam_image = st.camera_input("")
 
         if cam_image:
             img = Image.open(cam_image).convert("RGB")
             img_np = np.array(img)
-            img_np_resized = letterbox_image(img_np, target_size=(640,640))
+            img_np_resized = letterbox_image(img_np, target_size=(640, 640))
 
-            # Deteksi YOLO
             with st.spinner("Detecting faces... 🔍"):
                 start_time = time.time()
-                results = model(img_np_resized, conf=0.15, iou=0.3)
+                results = model(img_np_resized, conf=confidence, iou=iou_value)
                 inference_time = time.time() - start_time
 
-
-            # Dapatkan hasil plot sebagai array
-            result_img_resized = results[0].plot()  # biasanya 640x640
-            
-            # Resize result_img_resized agar sesuai dengan ukuran input asli (Before)
+            result_img_resized = results[0].plot()
             h, w = img_np.shape[:2]
             result_img_resized = cv2.resize(result_img_resized, (w, h))
 
             with col_after:
-                st.markdown("<br>", unsafe_allow_html=True)  # Spasi sedikit
                 st.image(result_img_resized, caption="After Detection", use_container_width=True)
                 st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-                # Ekstraksi ekspresi dari hasil YOLO
-                if results[0].boxes is not None and len(results[0].boxes) > 0:
-                    # Ambil nama kelas langsung dari model YOLO
-                    detected_expressions = [
-                        results[0].names[int(cls)] 
-                        for cls in results[0].boxes.cls
-                    ]
 
+                if results[0].boxes is not None and len(results[0].boxes) > 0:
+                    detected_expressions = [results[0].names[int(cls)] for cls in results[0].boxes.cls]
                     unique_expressions = sorted(set(detected_expressions))
                     st.markdown(
                         f"<div class='info-box'>😃 Ekspresi Terdeteksi: {', '.join(unique_expressions)}</div>", 
                         unsafe_allow_html=True
                     )
 
-                # Tombol Download
                 st.download_button(
                     label="💾 Download Detection Result",
                     data=get_downloadable_image(result_img_resized),
                     file_name="hasil_deteksi_kamera.png",
                     mime="image/png"
                 )
+
 
 
 
