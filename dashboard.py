@@ -137,90 +137,84 @@ def load_yolo_model():
 model = load_yolo_model()
 
 # ======================================
-# Top Navigation Tabs
+# About Me (DI ATAS)
 # ======================================
-tab = st.tabs(["About Me", "Deteksi Wajah"])
-about_tab, detect_tab = tab
+st.markdown("<h1>About Me</h1>", unsafe_allow_html=True)
+col1_bio, col2_bio = st.columns([1,1])
+with col1_bio:
+    st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
+with col2_bio:
+    st.info("""
+    **Nama:** Heru Bagus Cahyo  
+    **Jurusan:** Statistika  
+    **Angkatan:** 2022  
+    **Email:** herubagusapk@gmail.com  
+    **Instagram:** @herubaguscahyo  
+    """)
+
+st.markdown("---")  # separator
 
 # ======================================
-# About Me
+# Deteksi Wajah (DI BAWAH)
 # ======================================
-with about_tab:
-    st.markdown("<h1>About Me</h1>", unsafe_allow_html=True)
-    col1_bio, col2_bio = st.columns([1,1])
-    with col1_bio:
-        st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
-    with col2_bio:
-        st.info("""
-        **Nama:** Heru Bagus Cahyo  
-        **Jurusan:** Statistika  
-        **Angkatan:** 2022  
-        **Email:** herubagusapk@gmail.com  
-        **Instagram:** @herubaguscahyo  
-        """)
+st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
+st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
+st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>", unsafe_allow_html=True)
 
-# ======================================
-# Deteksi Wajah
-# ======================================
-with detect_tab:
-    st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
-    st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
-    st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>", unsafe_allow_html=True)
-    
-    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-    detect_button = st.button("🚀 Detect Faces")
+uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+detect_button = st.button("🚀 Detect Faces")
 
-    if detect_button and uploaded_file:
-        if uploaded_file.size > 20*1024*1024:
-            st.warning("⚠️ File terlalu besar, maksimal 20 MB")
+if detect_button and uploaded_file:
+    if uploaded_file.size > 20*1024*1024:
+        st.warning("⚠️ File terlalu besar, maksimal 20 MB")
+    else:
+        img = Image.open(uploaded_file).convert("RGB")
+        img_np = np.array(img)
+
+        # Histogram equalization
+        img_gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
+        img_gray = cv2.equalizeHist(img_gray)
+        img_np_eq = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2RGB)
+
+        # Letterbox resize
+        img_np_resized = letterbox_image(img_np_eq, target_size=(640,640))
+
+        # Detect
+        with st.spinner("Detecting faces... 🔍"):
+            start_time = time.time()
+            results = model(img_np_resized, conf=0.15, iou=0.3)
+            inference_time = time.time() - start_time
+
+        result_img = results[0].plot()
+        boxes = results[0].boxes.xyxy
+
+        st.markdown("<div class='result-card'>", unsafe_allow_html=True)
+        col_before, col_after = st.columns(2)
+        with col_before:
+            st.image(img, caption="Before Detection", use_column_width=True)
+        with col_after:
+            st.image(result_img, caption="After Detection", use_column_width=True)
+        st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
+
+        # Download button
+        st.download_button(
+            label="💾 Download Detection Result",
+            data=get_downloadable_image(result_img),
+            file_name="hasil_deteksi_wajah.png",
+            mime="image/png"
+        )
+
+        if len(boxes) > 0:
+            st.markdown("### Detected Faces")
+            face_cols = st.columns(min(4, len(boxes)))
+            for i, box in enumerate(boxes):
+                x1, y1, x2, y2 = map(int, box[:4])
+                face_crop = img_np_resized[y1:y2, x1:x2]
+                face_img = Image.fromarray(face_crop)
+                face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
         else:
-            img = Image.open(uploaded_file).convert("RGB")
-            img_np = np.array(img)
-
-            # Histogram equalization
-            img_gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-            img_gray = cv2.equalizeHist(img_gray)
-            img_np_eq = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2RGB)
-
-            # Letterbox resize
-            img_np_resized = letterbox_image(img_np_eq, target_size=(640,640))
-
-            # Detect
-            with st.spinner("Detecting faces... 🔍"):
-                start_time = time.time()
-                results = model(img_np_resized, conf=0.15, iou=0.3)
-                inference_time = time.time() - start_time
-
-            result_img = results[0].plot()
-            boxes = results[0].boxes.xyxy
-
-            st.markdown("<div class='result-card'>", unsafe_allow_html=True)
-            col_before, col_after = st.columns(2)
-            with col_before:
-                st.image(img, caption="Before Detection", use_column_width=True)
-            with col_after:
-                st.image(result_img, caption="After Detection", use_column_width=True)
-            st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-
-            # Download button
-            st.download_button(
-                label="💾 Download Detection Result",
-                data=get_downloadable_image(result_img),
-                file_name="hasil_deteksi_wajah.png",
-                mime="image/png"
-            )
-
-            if len(boxes) > 0:
-                st.markdown("### Detected Faces")
-                face_cols = st.columns(min(4, len(boxes)))
-                for i, box in enumerate(boxes):
-                    x1, y1, x2, y2 = map(int, box[:4])
-                    face_crop = img_np_resized[y1:y2, x1:x2]
-                    face_img = Image.fromarray(face_crop)
-                    face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
-            else:
-                st.warning("⚠️ No faces detected in this image.")
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.warning("⚠️ No faces detected in this image.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # ======================================
 # Footer
