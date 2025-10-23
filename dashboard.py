@@ -324,6 +324,13 @@ def show_detect(model):
                 if results[0].boxes is not None:
                     boxes = results[0].boxes.xyxy
                     st.metric(label="Jumlah Wajah Terdeteksi", value=len(boxes))
+                    # Statistik / Info Dinamis
+                if len(boxes) > 0:
+                    h, w = result_img_resized.shape[:2]
+                    total_area_faces = sum((box[2]-box[0])*(box[3]-box[1]) for box in boxes)
+                    ratio = (total_area_faces / (h*w)) * 100
+                    st.metric(label="Rasio Area Wajah vs Gambar (%)", value=f"{ratio:.2f}%")
+
                 # Tombol Download
                 st.download_button(
                     label="💾 Download Detection Result",
