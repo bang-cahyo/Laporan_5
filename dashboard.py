@@ -189,12 +189,16 @@ with st.sidebar:
         index=0
     )
 
-    if menu == "🏠 Home":
-        st.session_state.page = "home"
-    elif menu == "🧍 About":
-        st.session_state.page = "about"
-    elif menu == "📷 Deteksi Wajah":
-        st.session_state.page = "detect"
+   
+    if "menu" not in st.session_state:
+        st.session_state.menu = "🏠 Home"
+    
+    menu = st.radio(
+        "Navigasi:",
+        ["🏠 Home", "🧍 About", "📷 Deteksi Wajah"],
+        index=["🏠 Home","🧍 About","📷 Deteksi Wajah"].index(st.session_state.menu)
+    )
+
 # ======================================
 # Halaman Home
 # ======================================
@@ -204,18 +208,19 @@ def show_home():
     st.markdown("<p style='text-align:center; color:#bcd4ff; font-size:1.2rem;'>Aplikasi web untuk mendeteksi wajah dan ekspresi secara real-time dengan teknologi YOLOv8.</p>", unsafe_allow_html=True)
     st.markdown("---")
 
-    # Tombol navigasi cepat ke halaman lain
+    # Tombol navigasi cepat ke halaman lain di Home
     col1, col2 = st.columns(2, gap="medium")
     with col1:
         if st.button("🧍 Pelajari Tentang Aplikasi"):
             st.session_state.page = "about"
-            st.experimental_rerun()  # langsung lompat ke About
+            st.session_state.menu = "🧍 About"  # sinkronisasi dengan sidebar
+            st.experimental_rerun()
+    
     with col2:
         if st.button("📷 Mulai Deteksi Wajah"):
             st.session_state.page = "detect"
-            st.experimental_rerun()  # langsung lompat ke Deteksi Wajah
-
-    st.markdown("---")
+            st.session_state.menu = "📷 Deteksi Wajah"  # sinkronisasi dengan sidebar
+            st.experimental_rerun()
 
     # Ringkasan Fitur Singkat
     col1, col2, col3 = st.columns(3, gap="medium")
