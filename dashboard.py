@@ -119,10 +119,10 @@ if st.session_state.page == "about":
 
     col_nav, col_content = st.columns([1,3])
     with col_nav:
-        about_option = st.radio("Pilih:", ["Tentang Penulis", "Tentang Website"])
+        about_option = st.radio("Pilih:", ["About Author", "About Website"])
 
     with col_content:
-        if about_option == "Tentang Penulis":
+        if about_option == "About Author":
             col1_bio, col2_bio = st.columns([1,1])
             with col1_bio:
                 st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
