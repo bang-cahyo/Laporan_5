@@ -180,24 +180,27 @@ with st.sidebar:
         </style>
     """, unsafe_allow_html=True)
 
+# ======================================
+# Sidebar Navigasi 
+# ======================================
+with st.sidebar:
     st.markdown("<div class='sidebar-title'>🤖 YOLO Face Detection</div>", unsafe_allow_html=True)
     st.markdown("<div class='sidebar-subtext'>by Heru Bagus Cahyo</div>", unsafe_allow_html=True)
 
-    menu = st.radio(
-        "Navigasi:",
-        ["🏠 Home", "🧍 About", "📷 Deteksi Wajah"],
-        index=0
+    # Inisialisasi halaman jika belum ada
+    if "page" not in st.session_state:
+        st.session_state.page = "home"
+
+    # Pilihan menu
+    page_options = {"🏠 Home": "home", "🧍 About": "about", "📷 Deteksi Wajah": "detect"}
+    selected_menu = st.radio(
+        "Navigasi:", list(page_options.keys()),
+        index=list(page_options.values()).index(st.session_state.page)
     )
 
-   
-    if "menu" not in st.session_state:
-        st.session_state.menu = "🏠 Home"
-    
-    menu = st.radio(
-        "Navigasi:",
-        ["🏠 Home", "🧍 About", "📷 Deteksi Wajah"],
-        index=["🏠 Home","🧍 About","📷 Deteksi Wajah"].index(st.session_state.menu)
-    )
+    # Set halaman sesuai pilihan
+    st.session_state.page = page_options[selected_menu]
+
 
 # ======================================
 # Halaman Home
@@ -209,18 +212,18 @@ def show_home():
     st.markdown("---")
 
     # Tombol navigasi cepat ke halaman lain di Home
-    col1, col2 = st.columns(2, gap="medium")
-    with col1:
-        if st.button("🧍 Pelajari Tentang Aplikasi"):
-            st.session_state.page = "about"
-            st.session_state.menu = "🧍 About"  # sinkronisasi dengan sidebar
-            st.experimental_rerun()
-    
-    with col2:
-        if st.button("📷 Mulai Deteksi Wajah"):
-            st.session_state.page = "detect"
-            st.session_state.menu = "📷 Deteksi Wajah"  # sinkronisasi dengan sidebar
-            st.experimental_rerun()
+# Tombol navigasi cepat ke halaman lain
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("🧍 Pelajari Tentang Aplikasi"):
+        st.session_state.page = "about"
+        st.experimental_rerun()  # langsung lompat ke About
+
+with col2:
+    if st.button("📷 Mulai Deteksi Wajah"):
+        st.session_state.page = "detect"
+        st.experimental_rerun()  # langsung lompat ke Deteksi Wajah
+
 
     # Ringkasan Fitur Singkat
     col1, col2, col3 = st.columns(3, gap="medium")
@@ -417,7 +420,7 @@ if st.session_state.page == "about":
     show_about()
 elif st.session_state.page == "detect":
     show_detect(model)
-else:  # default ke Home
+else:
     show_home()
 
 
