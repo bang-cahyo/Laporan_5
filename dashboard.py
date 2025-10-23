@@ -291,11 +291,18 @@ else:
     st.markdown("Selamat datang di **YOLO Face Detection Dashboard**! Pilih menu di atas untuk mulai.")
 
 # ======================================
-# Footer
+# Footer dengan About
 # ======================================
-st.markdown("""
+st.markdown(f"""
 <footer>
     🤖 YOLO Face Detection Dashboard | Created by <b>Heru Bagus Cahyo</b><br>
     Powered by <b>Streamlit</b> & <b>Ultralytics YOLOv8</b> | UI/UX Futuristic Neon Glow
+    <hr style="border:0.5px solid #00e0ff; margin:10px 0;">
+    <div style="font-size:0.85rem; color:#bcd4ff;">
+        <b>About This App:</b> Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model <b>YOLOv8</b> yang sudah dilatih khusus untuk wajah manusia. 
+        Tujuan website ini adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat, tanpa perlu menginstal software tambahan. 
+        Fitur utama termasuk upload gambar, deteksi wajah otomatis, tampilan Before/After, dan download hasil deteksi.
+    </div>
 </footer>
 """, unsafe_allow_html=True)
+
