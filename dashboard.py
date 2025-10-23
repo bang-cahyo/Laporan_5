@@ -254,6 +254,7 @@ def show_about():
 # ======================================
 from io import BytesIO
 from PIL import Image
+import PIL.ImageOps
 import streamlit as st
 
 def show_detect(model):
@@ -270,41 +271,81 @@ def show_detect(model):
     pilih_input = st.radio("Pilih Sumber Input:", ["🖼️ Upload Gambar", "📷 Gunakan Kamera"], horizontal=True)
 
     # ======================================
-    # 📷 MODE KAMERA (tanpa “before tambahan”)
+    # 🖼️ MODE UPLOAD GAMBAR
     # ======================================
-import PIL.ImageOps
+    if pilih_input == "🖼️ Upload Gambar":
+        uploaded_file = st.file_uploader("📁 Upload Gambar", type=["jpg", "jpeg", "png"])
 
-if pilih_input == "📷 Gunakan Kamera":
-    camera_input = st.camera_input("📸 Ambil Foto Menggunakan Kamera")
+        if uploaded_file is not None:
+            image = Image.open(uploaded_file).convert("RGB")
 
-    if camera_input is not None:
-        image = Image.open(camera_input).convert("RGB")
+            with st.spinner("🔍 Mendeteksi wajah..."):
+                results = model(image, conf=0.25)
+                result_image = results[0].plot()
+                result_image = Image.fromarray(result_image[..., ::-1])
 
-        # ✅ Perbaiki orientasi & resize biar deteksi YOLO akurat
-        image = PIL.ImageOps.exif_transpose(image)
-        image = image.resize((640, 640))
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("<h4 style='text-align:center; color:#bcd4ff;'>Gambar Asli</h4>", unsafe_allow_html=True)
+                st.image(image, use_container_width=True)
+            with col2:
+                st.markdown("<h4 style='text-align:center; color:#bcd4ff;'>Hasil Deteksi</h4>", unsafe_allow_html=True)
+                st.image(result_image, use_container_width=True)
 
-        with st.spinner("🔍 Mendeteksi wajah..."):
-            results = model(image, conf=0.25)
-            result_image = results[0].plot()
-            result_image = Image.fromarray(result_image[..., ::-1])
-
-        # Tampilkan before-after berdampingan
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("<h4 style='text-align:center;'>📸 Kamera</h4>", unsafe_allow_html=True)
-            st.image(image, use_container_width=True)
-        with col2:
-            st.markdown("<h4 style='text-align:center;'>✅ Deteksi</h4>", unsafe_allow_html=True)
-            st.image(result_image, use_container_width=True)
-
-        num_faces = len(results[0].boxes)
-        if num_faces > 0:
+            num_faces = len(results[0].boxes)
             st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
-        else:
-            st.warning("😕 Tidak ada wajah terdeteksi.")
 
-            # Ekstraksi ekspresi (jika model mendukung)
+            # Tombol download hasil
+            def get_downloadable_image(img):
+                buf = BytesIO()
+                img.save(buf, format="PNG")
+                return buf.getvalue()
+
+            result_img_resized = result_image.resize(image.size)
+            st.download_button(
+                label="💾 Download Hasil Deteksi",
+                data=get_downloadable_image(result_img_resized),
+                file_name="hasil_deteksi_wajah.png",
+                mime="image/png"
+            )
+
+    # ======================================
+    # 📷 MODE KAMERA — Before & After KANAN-KIRI
+    # ======================================
+    else:
+        camera_input = st.camera_input("📸 Ambil Foto Menggunakan Kamera")
+
+        if camera_input is not None:
+            image = Image.open(camera_input).convert("RGB")
+
+            # ✅ Perbaiki orientasi & ukuran agar YOLO lebih akurat
+            image = PIL.ImageOps.exif_transpose(image)
+            image = image.resize((640, 640))
+
+            with st.spinner("🔍 Mendeteksi wajah..."):
+                results = model(image, conf=0.25)
+                result_image = results[0].plot()
+                result_image = Image.fromarray(result_image[..., ::-1])
+
+            # Tampilkan hasil berdampingan (kanan-kiri)
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("<h4 style='text-align:center;'>📸 Kamera</h4>", unsafe_allow_html=True)
+                st.image(image, use_container_width=True)
+            with col2:
+                st.markdown("<h4 style='text-align:center;'>✅ Deteksi</h4>", unsafe_allow_html=True)
+                st.image(result_image, use_container_width=True)
+
+            # ==========================
+            # Informasi Deteksi
+            # ==========================
+            num_faces = len(results[0].boxes)
+            if num_faces > 0:
+                st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
+            else:
+                st.warning("😕 Tidak ada wajah terdeteksi.")
+
+            # Ekspresi wajah (jika model punya label)
             if hasattr(results[0], "names") and results[0].boxes is not None and len(results[0].boxes) > 0:
                 detected_expressions = [results[0].names[int(cls)] for cls in results[0].boxes.cls]
                 unique_expressions = sorted(set(detected_expressions))
@@ -329,31 +370,6 @@ if pilih_input == "📷 Gunakan Kamera":
                 file_name="hasil_deteksi_wajah.png",
                 mime="image/png"
             )
-
-    # ======================================
-    # 🖼️ MODE UPLOAD GAMBAR (tanpa perubahan)
-    # ======================================
-    else:
-        uploaded_file = st.file_uploader("📁 Upload Gambar", type=["jpg", "jpeg", "png"])
-
-        if uploaded_file is not None:
-            image = Image.open(uploaded_file).convert("RGB")
-
-            with st.spinner("🔍 Mendeteksi wajah..."):
-                results = model(image, conf=0.25)
-                result_image = results[0].plot()
-                result_image = Image.fromarray(result_image[..., ::-1])
-
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("<h4 style='text-align:center; color:#bcd4ff;'>Gambar Asli</h4>", unsafe_allow_html=True)
-                st.image(image, use_container_width=True)
-            with col2:
-                st.markdown("<h4 style='text-align:center; color:#bcd4ff;'>Hasil Deteksi</h4>", unsafe_allow_html=True)
-                st.image(result_image, use_container_width=True)
-
-            num_faces = len(results[0].boxes)
-            st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
 
 
 # ======================================
