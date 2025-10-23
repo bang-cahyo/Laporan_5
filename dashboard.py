@@ -272,38 +272,37 @@ def show_detect(model):
     # ======================================
     # 📷 MODE KAMERA (tanpa “before tambahan”)
     # ======================================
-    if pilih_input == "📷 Gunakan Kamera":
-        camera_input = st.camera_input("📸 Ambil Foto Menggunakan Kamera")
+import PIL.ImageOps
 
-        if camera_input is not None:
-            # Baca gambar dari kamera
-            image = Image.open(camera_input).convert("RGB")
+if pilih_input == "📷 Gunakan Kamera":
+    camera_input = st.camera_input("📸 Ambil Foto Menggunakan Kamera")
 
-            # Deteksi wajah
-            with st.spinner("🔍 Mendeteksi wajah..."):
-                results = model(image, conf=0.25)
-                result_image = results[0].plot()  # hasil array BGR
-                result_image = Image.fromarray(result_image[..., ::-1])  # ubah ke RGB
+    if camera_input is not None:
+        image = Image.open(camera_input).convert("RGB")
 
-            # ==========================
-            # BEFORE-AFTER berdampingan
-            # ==========================
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("<h4 style='text-align:center; color:#bcd4ff;'>📸 Gambar Kamera</h4>", unsafe_allow_html=True)
-                st.image(image, use_container_width=True)
-            with col2:
-                st.markdown("<h4 style='text-align:center; color:#bcd4ff;'>✅ Hasil Deteksi</h4>", unsafe_allow_html=True)
-                st.image(result_image, use_container_width=True)
+        # ✅ Perbaiki orientasi & resize biar deteksi YOLO akurat
+        image = PIL.ImageOps.exif_transpose(image)
+        image = image.resize((640, 640))
 
-            # ==========================
-            # Informasi hasil
-            # ==========================
-            num_faces = len(results[0].boxes)
-            if num_faces > 0:
-                st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
-            else:
-                st.warning("😕 Tidak ada wajah terdeteksi.")
+        with st.spinner("🔍 Mendeteksi wajah..."):
+            results = model(image, conf=0.25)
+            result_image = results[0].plot()
+            result_image = Image.fromarray(result_image[..., ::-1])
+
+        # Tampilkan before-after berdampingan
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("<h4 style='text-align:center;'>📸 Kamera</h4>", unsafe_allow_html=True)
+            st.image(image, use_container_width=True)
+        with col2:
+            st.markdown("<h4 style='text-align:center;'>✅ Deteksi</h4>", unsafe_allow_html=True)
+            st.image(result_image, use_container_width=True)
+
+        num_faces = len(results[0].boxes)
+        if num_faces > 0:
+            st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
+        else:
+            st.warning("😕 Tidak ada wajah terdeteksi.")
 
             # Ekstraksi ekspresi (jika model mendukung)
             if hasattr(results[0], "names") and results[0].boxes is not None and len(results[0].boxes) > 0:
