@@ -267,34 +267,34 @@ def show_detect(model):
     st.markdown('<h2 class="neon-title">YOLO Face Detection</h2>', unsafe_allow_html=True)
     pilih_input = st.radio("Pilih Sumber Input:", ["🖼️ Upload Gambar", "📷 Gunakan Kamera"])
 
-# ======================================
-# UPLOAD GAMBAR
-# ======================================
-uploaded_file = st.file_uploader("📁 Upload Gambar", type=["jpg", "jpeg", "png"])
-
-if uploaded_file is not None:
-    # Konversi file ke image PIL
-    image = Image.open(uploaded_file)
-
-    # Pastikan format RGB
-    if image.mode != "RGB":
-        image = image.convert("RGB")
-
-    # Tampilkan gambar original
-    st.image(image, caption="Gambar Asli", use_container_width=False)
-
-    # Deteksi wajah otomatis
-    with st.spinner("🔍 Mendeteksi wajah..."):
-        results = model(image, conf=0.25)  # turunkan threshold agar lebih sensitif
-        result_image = results[0].plot()  # hasil berupa array BGR
-        result_image = Image.fromarray(result_image[..., ::-1])  # ubah ke RGB
-
-    # Tampilkan hasil deteksi
-    st.image(result_image, caption="Hasil Deteksi", use_container_width=False)
-
-    # Tambahkan informasi jumlah deteksi
-    num_faces = len(results[0].boxes)
-    st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
+    # ======================================
+    # UPLOAD GAMBAR
+    # ======================================
+    uploaded_file = st.file_uploader("📁 Upload Gambar", type=["jpg", "jpeg", "png"])
+    
+    if uploaded_file is not None:
+        # Konversi file ke image PIL
+        image = Image.open(uploaded_file)
+    
+        # Pastikan format RGB
+        if image.mode != "RGB":
+            image = image.convert("RGB")
+    
+        # Tampilkan gambar original
+        st.image(image, caption="Gambar Asli", use_container_width=False)
+    
+        # Deteksi wajah otomatis
+        with st.spinner("🔍 Mendeteksi wajah..."):
+            results = model(image, conf=0.25)  # turunkan threshold agar lebih sensitif
+            result_image = results[0].plot()  # hasil berupa array BGR
+            result_image = Image.fromarray(result_image[..., ::-1])  # ubah ke RGB
+    
+        # Tampilkan hasil deteksi
+        st.image(result_image, caption="Hasil Deteksi", use_container_width=False)
+    
+        # Tambahkan informasi jumlah deteksi
+        num_faces = len(results[0].boxes)
+        st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
 
             # Tombol download hasil
             st.download_button(
