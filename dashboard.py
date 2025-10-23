@@ -201,7 +201,7 @@ def show_home():
 
     # Caption di atas gambar
     st.markdown(
-        "<h3 style='text-align:center; color:#00e0ff;'>Welcome to the Futuristic Dashboard</h3>",
+        "<h3 style='text-align:center; color:#00e0ff;'>Welcome to the Cahyo Dashboard</h3>",
         unsafe_allow_html=True
     )
 
