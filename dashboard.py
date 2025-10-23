@@ -326,10 +326,19 @@ def show_detect(model):
                     st.metric(label="Jumlah Wajah Terdeteksi", value=len(boxes))
                     # Statistik / Info Dinamis
                 if len(boxes) > 0:
-                    h, w = result_img_resized.shape[:2]
-                    total_area_faces = sum((box[2]-box[0])*(box[3]-box[1]) for box in boxes)
-                    ratio = (total_area_faces / (h*w)) * 100
-                    st.metric(label="Rasio Area Wajah vs Gambar (%)", value=f"{ratio:.2f}%")
+                    expressions = []
+                    for i, box in enumerate(boxes):
+                        x1, y1, x2, y2 = map(int, box[:4])
+                        face_crop = img_np[y1:y2, x1:x2]  # crop wajah
+                        face_img = Image.fromarray(face_crop)
+                        
+                        # Prediksi ekspresi (contoh: model return string label)
+                        label = expression_model.predict(face_img)
+                        expressions.append(label)
+                        
+                        # Tampilkan wajah dengan label
+                        st.image(face_img, caption=f"Face {i+1}: {label}", width=160)
+
 
                 # Tombol Download
                 st.download_button(
