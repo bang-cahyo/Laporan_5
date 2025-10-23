@@ -340,46 +340,47 @@ def show_detect(model):
                 mime="image/png"
             )
 
-    # ==============================
-    # Gunakan Kamera
-    # ==============================
+    # ======================================
+    # 📷 MODE KAMERA
+    # ======================================
     elif pilih_input == "📷 Gunakan Kamera":
-        st.info("📸 Gunakan kamera untuk mengambil gambar dan deteksi ekspresi otomatis.")
-        col_cam, col_after = st.columns(2)
+        camera_photo = st.camera_input("Ambil Foto")
 
-        with col_cam:
-            cam_image = st.camera_input("Ambil gambar dari kamera")
+        if camera_photo is not None:
+            image = Image.open(camera_photo)
+            if image.mode != "RGB":
+                image = image.convert("RGB")
 
-        if cam_image:
-            img = Image.open(cam_image).convert("RGB")
-            img_np = np.array(img)
-            img_np_resized = letterbox_image(img_np, target_size=(640, 640))
+            with st.spinner("🔍 Mendeteksi wajah..."):
+                results = model(image, conf=0.25)
+                result_image = results[0].plot()
+                result_image = Image.fromarray(result_image[..., ::-1])
 
-            # Jalankan deteksi otomatis
-            with st.spinner("Mendeteksi ekspresi wajah... 🔍"):
-                start_time = time.time()
-                results = model(img_np_resized, conf=0.25, iou=0.3)
-                inference_time = time.time() - start_time
+            col1, col2 = st.columns(2)
+            with col1:
+                st.image(image, caption="📷 Gambar Kamera", use_container_width=True)
+            with col2:
+                st.image(result_image, caption="✅ Hasil Deteksi", use_container_width=True)
 
-            # Gambar hasil deteksi
-            result_img_resized = results[0].plot()
-            h, w = img_np.shape[:2]
-            result_img_resized = cv2.resize(result_img_resized, (w, h))
+            num_faces = len(results[0].boxes)
+            st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
 
-            with col_after:
-                st.image(result_img_resized, caption="Hasil Deteksi", use_container_width=True)
-                st.markdown(f"<div class='info-box'>🕒 Waktu Inference: {inference_time:.2f} detik</div>", unsafe_allow_html=True)
-
-                # Ekstraksi ekspresi
-                if results[0].boxes is not None and len(results[0].boxes) > 0:
-                    detected_expressions = [results[0].names[int(cls)] for cls in results[0].boxes.cls]
-                    unique_expressions = sorted(set(detected_expressions))
-                    st.markdown(
-                        f"<div class='info-box'>😃 Ekspresi Terdeteksi: {', '.join(unique_expressions)}</div>", 
-                        unsafe_allow_html=True
-                    )
-                else:
-                    st.warning("😕 Tidak ada ekspresi wajah terdeteksi.")
+            if results[0].boxes is not None and len(results[0].boxes) > 0:
+                detected_expressions = [
+                    results[0].names[int(cls)] for cls in results[0].boxes.cls
+                ]
+                unique_expressions = sorted(set(detected_expressions))
+                st.markdown(
+                    f"""
+                    <div style='background-color:#0f172a; padding:12px; border-radius:10px;
+                    border:1px solid #00e0ff; color:#00e0ff; text-align:center;'>
+                    😃 <b>Ekspresi Terdeteksi:</b> {', '.join(unique_expressions)}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            else:
+                st.warning("😕 Tidak ada ekspresi wajah terdeteksi.")
 
                
                 # Samakan ukuran hasil deteksi dengan gambar asli
