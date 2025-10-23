@@ -196,7 +196,6 @@ def show_about():
     with col_content:
         if st.session_state.about_option == "Tentang Website":
             st.markdown("""
-            **Tentang Website YOLO Face Detection**
     
             Website ini dibuat untuk mendeteksi wajah pada gambar secara otomatis menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia. 
             Tujuannya adalah memudahkan pengguna mendeteksi wajah tanpa perlu menginstal software tambahan atau memahami pemrograman.
