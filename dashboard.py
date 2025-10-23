@@ -278,43 +278,43 @@ def show_detect(model):
             )
 
     else:  # Gunakan Kamera
-    st.info("📸 Ambil foto menggunakan kamera, hasil deteksi akan muncul di sebelahnya.")
-
-    col_cam, col_result = st.columns([1, 1])
-
-    with col_cam:
-        # Hilangkan label di camera_input
-        cam_image = st.camera_input(label="")  # Kosongkan label
-
-    if cam_image:
-        img = Image.open(cam_image).convert("RGB")
-        img_np = np.array(img)
-        h_input, w_input = img_np.shape[:2]
-
-        # Resize untuk YOLO tetap 640x640
-        img_np_resized = letterbox_image(img_np, target_size=(640,640))
-
-        with st.spinner("Detecting faces... 🔍"):
-            start_time = time.time()
-            results = model(img_np_resized, conf=0.15, iou=0.3)
-            inference_time = time.time() - start_time
-
-        # Hasil deteksi model
-        result_img = results[0].plot()
-
-        # Resize hasil deteksi supaya mengikuti rasio asli kamera
-        result_img_resized = cv2.resize(result_img, (w_input, h_input))
-
-        with col_result:
-            st.image(result_img_resized, caption="Hasil Deteksi Kamera", use_container_width=True)
-            st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-
-            st.download_button(
-                label="💾 Download Detection Result",
-                data=get_downloadable_image(result_img_resized),
-                file_name="hasil_deteksi_kamera.png",
-                mime="image/png"
-            )
+        st.info("📸 Ambil foto menggunakan kamera, hasil deteksi akan muncul di sebelahnya.")
+    
+        col_cam, col_result = st.columns([1, 1])
+    
+        with col_cam:
+            # Hilangkan label di camera_input
+            cam_image = st.camera_input(label="")  # Kosongkan label
+    
+        if cam_image:
+            img = Image.open(cam_image).convert("RGB")
+            img_np = np.array(img)
+            h_input, w_input = img_np.shape[:2]
+    
+            # Resize untuk YOLO tetap 640x640
+            img_np_resized = letterbox_image(img_np, target_size=(640,640))
+    
+            with st.spinner("Detecting faces... 🔍"):
+                start_time = time.time()
+                results = model(img_np_resized, conf=0.15, iou=0.3)
+                inference_time = time.time() - start_time
+    
+            # Hasil deteksi model
+            result_img = results[0].plot()
+    
+            # Resize hasil deteksi supaya mengikuti rasio asli kamera
+            result_img_resized = cv2.resize(result_img, (w_input, h_input))
+    
+            with col_result:
+                st.image(result_img_resized, caption="Hasil Deteksi Kamera", use_container_width=True)
+                st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
+    
+                st.download_button(
+                    label="💾 Download Detection Result",
+                    data=get_downloadable_image(result_img_resized),
+                    file_name="hasil_deteksi_kamera.png",
+                    mime="image/png"
+                )
 
 
 # Render halaman sesuai pilihan
