@@ -234,7 +234,6 @@ def show_about():
 def show_detect(model):
     st.markdown('<h2 class="neon-title">YOLO Face Detection</h2>', unsafe_allow_html=True)
 
-    # Pilih sumber input
     pilih_input = st.radio("Pilih Sumber Input:", ["Upload Gambar", "Gunakan Kamera"])
 
     if pilih_input == "Upload Gambar":
@@ -248,10 +247,9 @@ def show_detect(model):
 
             img = Image.open(uploaded_file).convert("RGB")
             img_np = np.array(img)
-            img_gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-            img_gray = cv2.equalizeHist(img_gray)
-            img_np_eq = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2RGB)
-            img_np_resized = letterbox_image(img_np_eq, target_size=(640,640))
+            
+            # Resize untuk deteksi model saja
+            img_np_resized = letterbox_image(img_np, target_size=(640,640))
 
             # Deteksi YOLO
             with st.spinner("Detecting faces... 🔍"):
@@ -259,7 +257,9 @@ def show_detect(model):
                 results = model(img_np_resized, conf=0.15, iou=0.3)
                 inference_time = time.time() - start_time
 
-            result_img = results[0].plot()
+            # Ambil hasil deteksi dan kembalikan ke ukuran asli
+            result_img_resized = results[0].plot()
+            result_img = cv2.resize(result_img_resized, (img_np.shape[1], img_np.shape[0]))
 
             # Before / After
             st.markdown("<div class='result-card'>", unsafe_allow_html=True)
@@ -285,20 +285,20 @@ def show_detect(model):
 
         with col_cam:
             cam_image = st.camera_input("Ambil Foto")
-            st.write("")  # spasi untuk kerapian
+            st.write("")
 
         if cam_image:
             img = Image.open(cam_image).convert("RGB")
             img_np = np.array(img)
             img_np_resized = letterbox_image(img_np, target_size=(640,640))
 
-            # Deteksi YOLO
             with st.spinner("Detecting faces... 🔍"):
                 start_time = time.time()
                 results = model(img_np_resized, conf=0.15, iou=0.3)
                 inference_time = time.time() - start_time
 
-            result_img = results[0].plot()
+            result_img_resized = results[0].plot()
+            result_img = cv2.resize(result_img_resized, (img_np.shape[1], img_np.shape[0]))
 
             with col_result:
                 st.image(result_img, caption="Hasil Deteksi Kamera", use_container_width=True)
