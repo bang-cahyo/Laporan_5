@@ -44,8 +44,13 @@ h1 {
 }
 
 /* Neon Typing Animation */
-@keyframes typing { from { width: 0 } to { width: 100% } }
-@keyframes blink { 50% { border-color: transparent } }
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+@keyframes blink {
+  50% { border-color: transparent }
+}
 .neon-name {
   font-size: 1.2rem;
   color: #00e0ff;
@@ -118,7 +123,7 @@ footer {
 """, unsafe_allow_html=True)
 
 # ======================================
-# Fungsi tambahan untuk download hasil deteksi
+# Fungsi untuk download hasil deteksi
 # ======================================
 def get_downloadable_image(np_img):
     image = Image.fromarray(np_img)
@@ -127,11 +132,11 @@ def get_downloadable_image(np_img):
     return buf.getvalue()
 
 # ======================================
-# Load Model YOLO
+# Load Pre-trained YOLO Face Model
 # ======================================
 @st.cache_resource
 def load_yolo_model():
-    return YOLO("model/Cahyo_Laporan4.pt")
+    return YOLO("yolov8n-face.pt")  # Pre-trained face detection
 
 model = load_yolo_model()
 
@@ -141,17 +146,16 @@ model = load_yolo_model()
 page = st.sidebar.radio("Menu", ["Deteksi Wajah", "About Me"])
 
 # ======================================
-# Halaman About Me
+# About Me
 # ======================================
 if page == "About Me":
     st.markdown("<h1>About Me</h1>", unsafe_allow_html=True)
     st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
-    
-    # Layout dua kolom: kiri foto, kanan biodata
+
     col1, col2 = st.columns([1, 2], gap="large")
     with col1:
-        # Pakai file lokal jika deploy lokal, atau URL jika Streamlit Cloud
-        st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
+        # Gunakan URL publik jika deploy di Streamlit Cloud
+        st.image("https://i.ibb.co/2c8v4P7/foto-saya.jpg", caption="Heru Bagus Cahyo", width=200)
     with col2:
         st.info("""
         **Nama:** Heru Bagus Cahyo  
@@ -162,7 +166,7 @@ if page == "About Me":
         """)
 
 # ======================================
-# Halaman Deteksi Wajah
+# Deteksi Wajah
 # ======================================
 elif page == "Deteksi Wajah":
     st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
@@ -178,7 +182,7 @@ elif page == "Deteksi Wajah":
 
         with st.spinner("Detecting faces... 🔍"):
             start_time = time.time()
-            results = model(img_np)
+            results = model(img_np, conf=0.2)  # Confidence rendah untuk menangkap lebih banyak wajah
             inference_time = time.time() - start_time
 
         result_img = results[0].plot()
@@ -210,11 +214,11 @@ elif page == "Deteksi Wajah":
         st.info("📁 Please upload an image to begin detection.")
 
 # ======================================
-# Footer — Credit Pembuat
+# Footer
 # ======================================
 st.markdown("""
 <footer>
-    🤖 YOLO Face Detection Dashboard | Created with  by <b>Heru Bagus Cahyo</b> <br>
+    🤖 YOLO Face Detection Dashboard | Created by <b>Heru Bagus Cahyo</b> <br>
     Powered by Streamlit & Ultralytics YOLOv8
 </footer>
 """, unsafe_allow_html=True)
