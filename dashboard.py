@@ -314,10 +314,16 @@ def show_detect(model):
             result_img_resized = cv2.resize(result_img_resized, (w, h))
 
             with col_after:
-                st.markdown("<br>", unsafe_allow_html=True)  # Spasi sedikit
+                st.markdown("<br>", unsafe_allow_html=True)  # spasi
                 st.image(result_img_resized, caption="After Detection", use_container_width=True)
                 st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-
+            
+                # ==========================
+                # Statistik / Info Dinamis
+                # ==========================
+                if results[0].boxes is not None:
+                    boxes = results[0].boxes.xyxy
+                    st.metric(label="Jumlah Wajah Terdeteksi", value=len(boxes))
                 # Tombol Download
                 st.download_button(
                     label="💾 Download Detection Result",
