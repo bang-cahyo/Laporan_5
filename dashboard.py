@@ -164,15 +164,47 @@ st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_
 st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Futuristic.</p>", unsafe_allow_html=True)
 
 # ======================================
-# Tombol Navigasi Halaman
+# Sidebar Navigasi Vertikal Elegan
 # ======================================
-col1, col2 = st.columns([1, 1])
-with col1:
-    if st.button("About Me", key="btn_about"):
-        st.session_state.page = "about"
-with col2:
-    if st.button("Deteksi Wajah", key="btn_detect"):
-        st.session_state.page = "detect"
+st.markdown("""
+<div class="sidebar">
+    <a href="#" onclick="window.location.href='?page=about'">💫 About</a>
+    <a href="#" onclick="window.location.href='?page=detect'">📸 Detection</a>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<style>
+.sidebar {
+    position: fixed;
+    left: 25px;
+    top: 150px;
+    width: 180px;
+    background: rgba(15, 20, 40, 0.7);
+    border-radius: 20px;
+    padding: 15px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 0 25px #00e0ff50;
+    z-index: 100;
+}
+.sidebar a {
+    display: block;
+    padding: 12px;
+    color: #bcd4ff;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+.sidebar a:hover {
+    background: linear-gradient(90deg, #00e0ff50, #7a00ff50);
+    color: #fff;
+    transform: translateX(4px);
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 # ======================================
 # Halaman About
