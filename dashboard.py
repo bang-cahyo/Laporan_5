@@ -110,7 +110,7 @@ with col2:
 # ======================================
 # About Me & About Website
 # ======================================
-if page == "About":
+if page == "About Me":
     st.markdown("<h1>About</h1>", unsafe_allow_html=True)
 
     # Tombol navigasi vertikal untuk sub-about
