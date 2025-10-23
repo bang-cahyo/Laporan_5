@@ -1,11 +1,14 @@
 # ======================================
-# app.py - Bagian 1
+# dashboard.py - YOLO Face Detection
 # ======================================
 import streamlit as st
 from ultralytics import YOLO
+import numpy as np
+from PIL import Image
+import io
+import time
 import os
-from pages import page_about, page_detect  # memanggil modul halaman
-from utils import get_downloadable_image, letterbox_image
+import cv2
 
 # ======================================
 # Konfigurasi Halaman
@@ -58,6 +61,11 @@ h1 {
     border-radius: 20px;
     padding: 20px;
     margin-top: 20px;
+    transition: all 0.4s ease-in-out;
+}
+.result-card:hover {
+    box-shadow: 0 0 25px #00e0ff80, 0 0 50px #7a00ff60;
+    transform: translateY(-5px);
 }
 .info-box {
     background: linear-gradient(90deg, #151a28, #1e2440);
@@ -67,8 +75,66 @@ h1 {
     text-align: center;
     margin-top: 10px;
 }
+.neon-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #00e0ff;
+    text-shadow: 0 0 5px #00e0ff, 0 0 10px #7a00ff, 0 0 20px #00e0ff;
+}
+.subtext {
+    font-size: 1rem;
+    color: #bcd4ff;
+    margin-bottom: 20px;
+}
+.neon-title {
+    animation: glow 1.8s infinite alternate;
+    font-weight: 800;
+    font-size: 2.2rem;
+}
+@keyframes glow {
+    0% { text-shadow: 0 0 5px #00e0ff, 0 0 10px #7a00ff; }
+    50% { text-shadow: 0 0 15px #00e0ff, 0 0 25px #7a00ff; }
+    100% { text-shadow: 0 0 5px #00e0ff, 0 0 10px #7a00ff; }
+}
+footer {
+    background: linear-gradient(90deg, #0d0f1a, #1e1f3a);
+    padding: 15px 20px;
+    border-radius: 12px;
+    margin-top: 50px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #bcd4ff;
+    box-shadow: 0 0 20px #00e0ff40;
+}
+@media only screen and (max-width: 1024px) {
+    .stColumns { flex-direction: column !important; }
+    .stButton>button { margin-bottom: 15px; width: 100% !important; }
+}
 </style>
 """, unsafe_allow_html=True)
+
+# ======================================
+# Utility Functions
+# ======================================
+def get_downloadable_image(np_img):
+    """Convert numpy array to downloadable PNG bytes."""
+    image = Image.fromarray(np_img)
+    buf = io.BytesIO()
+    image.save(buf, format="PNG")
+    return buf.getvalue()
+
+def letterbox_image(img, target_size=(640,640)):
+    """Resize image keeping aspect ratio with padding."""
+    h, w = img.shape[:2]
+    target_w, target_h = target_size
+    scale = min(target_w/w, target_h/h)
+    nw, nh = int(w*scale), int(h*scale)
+    img_resized = cv2.resize(img, (nw, nh))
+    canvas = np.full((target_h, target_w, 3), 114, dtype=np.uint8)
+    top = (target_h - nh)//2
+    left = (target_w - nw)//2
+    canvas[top:top+nh, left:left+nw, :] = img_resized
+    return canvas
 
 # ======================================
 # Load YOLO Model
@@ -107,23 +173,18 @@ with col1:
 with col2:
     if st.button("Deteksi Wajah", key="btn_detect"):
         st.session_state.page = "detect"
-# ======================================
-# page_about.py - Halaman About
-# ======================================
-import streamlit as st
-from PIL import Image
 
+# ======================================
+# Halaman About
+# ======================================
 def show_about():
     st.markdown('<h1 class="neon-title">About This App</h1>', unsafe_allow_html=True)
     st.markdown('<p class="subtext">Learn more about this web application and its creator.</p>', unsafe_allow_html=True)
 
-    # Navigasi vertikal untuk sub-about
     col_nav, col_content = st.columns([1, 3])
-
     with col_nav:
         if "about_option" not in st.session_state:
-            st.session_state.about_option = "Tentang Website"  # default
-
+            st.session_state.about_option = "Tentang Website"
         about_option = st.radio(
             "Pilih:",
             ["Tentang Website", "Tentang Penulis"],
@@ -138,13 +199,13 @@ def show_about():
             **Tentang Website YOLO Face Detection**
 
             Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia.
-            Tujuan website ini adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat, tanpa perlu menginstal software tambahan atau memahami pemrograman.
+            Tujuan website ini adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat.
 
             **Fitur Utama:**
             - Upload gambar format JPG, JPEG, atau PNG
-            - Deteksi wajah otomatis, menampilkan hasil Before/After secara berdampingan
-            - Download hasil deteksi wajah dalam format PNG
-            - Tampilan UI futuristik dengan animasi neon untuk pengalaman pengguna yang menarik
+            - Deteksi wajah otomatis, menampilkan hasil Before/After
+            - Download hasil deteksi
+            - UI Futuristik Neon Glow
             """)
         else:
             col1_bio, col2_bio = st.columns([1,1])
@@ -158,17 +219,11 @@ def show_about():
                 **Email:** herubagusapk@gmail.com  
                 **Instagram:** @herubaguscahyo
                 """)
-# ======================================
-# page_detect.py - Halaman Deteksi Wajah
-# ======================================
-import streamlit as st
-import numpy as np
-from PIL import Image
-import cv2
-import time
-from utils import letterbox_image, get_downloadable_image
 
-def show_detect(model):
+# ======================================
+# Halaman Deteksi Wajah
+# ======================================
+def show_detect():
     st.markdown('<h2 class="neon-title">YOLO Face Detection</h2>', unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Upload an image", type=["jpg","jpeg","png"])
     detect_button = st.button("🚀 Detect Faces")
@@ -181,17 +236,13 @@ def show_detect(model):
         img = Image.open(uploaded_file).convert("RGB")
         img_np = np.array(img)
 
-        # ======================================
-        # Preprocessing Gambar
-        # ======================================
+        # Preprocessing
         img_gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
         img_gray = cv2.equalizeHist(img_gray)
         img_np_eq = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2RGB)
         img_np_resized = letterbox_image(img_np_eq, target_size=(640,640))
 
-        # ======================================
-        # Deteksi YOLO
-        # ======================================
+        # YOLO Detection
         with st.spinner("Detecting faces... 🔍"):
             start_time = time.time()
             results = model(img_np_resized, conf=0.15, iou=0.3)
@@ -200,21 +251,16 @@ def show_detect(model):
         result_img = results[0].plot()
         boxes = results[0].boxes.xyxy
 
-        # ======================================
-        # Tampilkan Before / After
-        # ======================================
+        # Before / After
         st.markdown("<div class='result-card'>", unsafe_allow_html=True)
         col_before, col_after = st.columns(2)
         with col_before:
             st.image(img, caption="Before Detection", use_column_width=True)
         with col_after:
             st.image(result_img, caption="After Detection", use_column_width=True)
-
         st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
 
-        # ======================================
-        # Tombol Download
-        # ======================================
+        # Download result
         st.download_button(
             label="💾 Download Detection Result",
             data=get_downloadable_image(result_img),
@@ -222,9 +268,7 @@ def show_detect(model):
             mime="image/png"
         )
 
-        # ======================================
-        # Tampilkan Crop Wajah Detected
-        # ======================================
+        # Crop wajah detected
         if len(boxes) > 0:
             st.markdown("### Detected Faces")
             face_cols = st.columns(min(4, len(boxes)))
@@ -236,12 +280,22 @@ def show_detect(model):
         else:
             st.warning("⚠️ No faces detected in this image.")
 
-    # ======================================
-    # Footer Futuristik
-    # ======================================
-    st.markdown("""
-    <footer>
-        🤖 YOLO Face Detection Dashboard | Created by <b>Heru Bagus Cahyo</b><br>
-        Powered by <b>Streamlit</b> & <b>Ultralytics YOLOv8</b> | UI/UX Futuristic Neon Glow
-    </footer>
-    """, unsafe_allow_html=True)
+# ======================================
+# Render Page
+# ======================================
+if st.session_state.page == "about":
+    show_about()
+elif st.session_state.page == "detect":
+    show_detect()
+else:
+    st.markdown("Selamat datang di **YOLO Face Detection Dashboard**! Pilih menu di atas untuk mulai.")
+
+# ======================================
+# Footer
+# ======================================
+st.markdown("""
+<footer>
+    🤖 YOLO Face Detection Dashboard | Created by <b>Heru Bagus Cahyo</b><br>
+    Powered by <b>Streamlit</b> & <b>Ultralytics YOLOv8</b> | UI/UX Futuristic Neon Glow
+</footer>
+""", unsafe_allow_html=True)
