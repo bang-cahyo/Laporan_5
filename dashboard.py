@@ -252,6 +252,9 @@ def show_about():
 # ======================================
 # Halaman Deteksi Wajah
 # ======================================
+from io import BytesIO
+from PIL import Image
+import streamlit as st
 
 def show_detect(model):
     # ==============================
@@ -262,48 +265,54 @@ def show_detect(model):
     st.markdown("---")
 
     # ==============================
-    # 🔹 Pilihan Input (Tanpa Sidebar)
+    # 🔹 Pilihan Input (Upload / Kamera)
     # ==============================
-    st.markdown('<h2 class="neon-title">YOLO Face Detection</h2>', unsafe_allow_html=True)
-    pilih_input = st.radio("Pilih Sumber Input:", ["🖼️ Upload Gambar", "📷 Gunakan Kamera"])
+    pilih_input = st.radio("Pilih Sumber Input:", ["🖼️ Upload Gambar", "📷 Gunakan Kamera"], horizontal=True)
 
     # ======================================
-    # UPLOAD GAMBAR
+    # 🖼️ MODE UPLOAD GAMBAR
     # ======================================
-    uploaded_file = st.file_uploader("📁 Upload Gambar", type=["jpg", "jpeg", "png"])
-    
-    if uploaded_file is not None:
-        # Konversi file ke image PIL
-        image = Image.open(uploaded_file)
-    
-        # Pastikan format RGB
-        if image.mode != "RGB":
-            image = image.convert("RGB")
-    
-        # Tampilkan gambar original
-        st.image(image, caption="Gambar Asli", use_container_width=False)
-    
-        # Deteksi wajah otomatis
-        with st.spinner("🔍 Mendeteksi wajah..."):
-            results = model(image, conf=0.25)  # turunkan threshold agar lebih sensitif
-            result_image = results[0].plot()  # hasil berupa array BGR
-            result_image = Image.fromarray(result_image[..., ::-1])  # ubah ke RGB
-    
-        # Tampilkan hasil deteksi
-        st.image(result_image, caption="Hasil Deteksi", use_container_width=False)
-    
-        # Tambahkan informasi jumlah deteksi
-        num_faces = len(results[0].boxes)
-        st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
+    if pilih_input == "🖼️ Upload Gambar":
+        uploaded_file = st.file_uploader("📁 Upload Gambar", type=["jpg", "jpeg", "png"])
+
+        if uploaded_file is not None:
+            # Konversi file ke image PIL
+            image = Image.open(uploaded_file)
+
+            # Pastikan format RGB
+            if image.mode != "RGB":
+                image = image.convert("RGB")
+
+            # Tampilkan gambar original
+            st.image(image, caption="🖼️ Gambar Asli", use_container_width=False)
+
+            # Deteksi wajah otomatis
+            with st.spinner("🔍 Mendeteksi wajah..."):
+                results = model(image, conf=0.25)  # lebih sensitif
+                result_image = results[0].plot()  # hasil berupa array BGR
+                result_image = Image.fromarray(result_image[..., ::-1])  # ubah ke RGB
+
+            # Tampilkan hasil deteksi
+            st.image(result_image, caption="✅ Hasil Deteksi", use_container_width=False)
+
+            # Tambahkan informasi jumlah deteksi
+            num_faces = len(results[0].boxes)
+            st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
+
+            # Fungsi bantu untuk download hasil
+            def get_downloadable_image(img):
+                buf = BytesIO()
+                img.save(buf, format="PNG")
+                byte_im = buf.getvalue()
+                return byte_im
 
             # Tombol download hasil
             st.download_button(
                 label="💾 Download Hasil Deteksi",
-                data=get_downloadable_image(result_img_resized),
+                data=get_downloadable_image(result_image),
                 file_name="hasil_deteksi_wajah.png",
                 mime="image/png"
             )
-
     # ==============================
     # Gunakan Kamera
     # ==============================
