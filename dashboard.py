@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 import io
 import time
+import os
 
 # ======================================
 # Konfigurasi Halaman
@@ -15,7 +16,7 @@ st.set_page_config(
 )
 
 # ======================================
-# CSS — Tampilan Futuristik + Neon Typing + Responsif
+# CSS — Futuristik + Neon Typing + Responsif
 # ======================================
 st.markdown("""
 <style>
@@ -27,7 +28,6 @@ body, .stApp {
     font-family: 'Poppins', sans-serif;
 }
 
-/* Hero Title */
 h1 {
     font-size: 3rem;
     font-weight: 700;
@@ -36,21 +36,14 @@ h1 {
     -webkit-text-fill-color: transparent;
 }
 
-/* Subtext */
 .subtext {
     font-size: 1.1rem;
     color: #b0b0b0;
     margin-bottom: 25px;
 }
 
-/* Neon Typing Animation */
-@keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
-}
-@keyframes blink {
-  50% { border-color: transparent }
-}
+@keyframes typing { from { width: 0 } to { width: 100% } }
+@keyframes blink { 50% { border-color: transparent } }
 .neon-name {
   font-size: 1.2rem;
   color: #00e0ff;
@@ -63,7 +56,14 @@ h1 {
   margin-bottom: 15px;
 }
 
-/* Tombol */
+.credit {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #00e0ff;
+    text-shadow: 0 0 8px rgba(0, 224, 255, 0.6);
+    margin-bottom: 15px;
+}
+
 .stButton>button {
     background: linear-gradient(90deg, #00e0ff, #7a00ff);
     color: white;
@@ -79,7 +79,6 @@ h1 {
     transform: translateY(-2px);
 }
 
-/* Card hasil deteksi */
 .result-card {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
@@ -88,13 +87,11 @@ h1 {
     box-shadow: 0 0 30px rgba(0,0,0,0.4);
 }
 
-/* Gambar hasil */
 .stImage > img {
     border-radius: 12px;
     box-shadow: 0 0 20px rgba(0,0,0,0.3);
 }
 
-/* Info box */
 .info-box {
     background: linear-gradient(90deg, #151a28, #1e2440);
     border-radius: 10px;
@@ -105,7 +102,6 @@ h1 {
     text-align: center;
 }
 
-/* Footer */
 footer {
     text-align: center;
     color: gray;
@@ -113,7 +109,6 @@ footer {
     font-size: 0.9rem;
 }
 
-/* Responsif untuk HP */
 @media (max-width: 768px){
     h1 { font-size: 2rem; }
     .subtext { font-size: 1rem; }
@@ -123,7 +118,7 @@ footer {
 """, unsafe_allow_html=True)
 
 # ======================================
-# Fungsi untuk download hasil deteksi
+# Fungsi tambahan
 # ======================================
 def get_downloadable_image(np_img):
     image = Image.fromarray(np_img)
@@ -132,13 +127,19 @@ def get_downloadable_image(np_img):
     return buf.getvalue()
 
 # ======================================
-# Load Pre-trained YOLO Face Model
+# Load Model YOLO
 # ======================================
 @st.cache_resource
-def load_yolo_model():
-    return YOLO("yolov8n-face.pt")  # Pre-trained face detection
+def load_yolo_model(use_custom=False):
+    if use_custom and os.path.exists("model/Cahyo_Laporan4.pt"):
+        return YOLO("model/Cahyo_Laporan4.pt")
+    else:
+        # otomatis download model wajah pre-trained
+        return YOLO("https://github.com/ultralytics/ultralytics/releases/download/v8.0/yolov8n-face.pt")
 
-model = load_yolo_model()
+# Pilihan model: custom atau pre-trained
+use_custom_model = st.sidebar.checkbox("Gunakan model custom (Cahyo_Laporan4.pt)", value=False)
+model = load_yolo_model(use_custom_model)
 
 # ======================================
 # Sidebar Navigation
@@ -149,14 +150,10 @@ page = st.sidebar.radio("Menu", ["Deteksi Wajah", "About Me"])
 # About Me
 # ======================================
 if page == "About Me":
-    st.markdown("<h1>About Me</h1>", unsafe_allow_html=True)
-    st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
-
-    col1, col2 = st.columns([1, 2], gap="large")
-    with col1:
-        # Gunakan URL publik jika deploy di Streamlit Cloud
-        st.image("https://i.ibb.co/2c8v4P7/foto-saya.jpg", caption="Heru Bagus Cahyo", width=200)
-    with col2:
+    col1_bio, col2_bio = st.columns([1,1])
+    with col1_bio:
+        st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
+    with col2_bio:
         st.info("""
         **Nama:** Heru Bagus Cahyo  
         **Jurusan:** Statistika  
@@ -182,7 +179,7 @@ elif page == "Deteksi Wajah":
 
         with st.spinner("Detecting faces... 🔍"):
             start_time = time.time()
-            results = model(img_np, conf=0.2)  # Confidence rendah untuk menangkap lebih banyak wajah
+            results = model(img_np)
             inference_time = time.time() - start_time
 
         result_img = results[0].plot()
@@ -210,15 +207,13 @@ elif page == "Deteksi Wajah":
         else:
             st.warning("⚠️ No faces detected in this image.")
         st.markdown("</div>", unsafe_allow_html=True)
-    elif not uploaded_file:
-        st.info("📁 Please upload an image to begin detection.")
 
 # ======================================
 # Footer
 # ======================================
 st.markdown("""
 <footer>
-    🤖 YOLO Face Detection Dashboard | Created by <b>Heru Bagus Cahyo</b> <br>
+    🤖 YOLO Face Detection Dashboard | Created with by <b>Heru Bagus Cahyo</b> <br>
     Powered by Streamlit & Ultralytics YOLOv8
 </footer>
 """, unsafe_allow_html=True)
