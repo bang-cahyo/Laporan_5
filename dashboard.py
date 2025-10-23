@@ -3,14 +3,13 @@
 import streamlit as st
 from ultralytics import YOLO
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 import io
 import time
 import os
 import cv2
 from utils import letterbox_image, get_downloadable_image
 from io import BytesIO
-
 
 # Konfigurasi Halaman
 st.set_page_config(
@@ -385,7 +384,7 @@ def show_detect(model):
         with col2:
             if camera_input is not None:
                 image = Image.open(camera_input).convert("RGB")
-                image = PIL.ImageOps.exif_transpose(image)
+                image = ImageOps.exif_transpose(image)
                 original_size = image.size
 
                 with st.spinner("🔍 Mendeteksi wajah..."):
