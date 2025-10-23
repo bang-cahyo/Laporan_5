@@ -230,11 +230,6 @@ def show_about():
 # ======================================
 # Halaman Deteksi Wajah
 # ======================================
-import streamlit as st
-import numpy as np
-from PIL import Image
-import cv2
-import time
 from utils import letterbox_image, get_downloadable_image
 
 def show_detect(model):
