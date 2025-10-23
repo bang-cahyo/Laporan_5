@@ -223,7 +223,7 @@ def show_home():
     # Tagline atau Quote Interaktif
     st.markdown(
         "<p style='text-align:center; color:#00e0ff; font-size:1.1rem; margin-top:20px;'>"
-        "<i>“Kami Deteksi Wajah, Anda Fokus Kreatif”</i></p>",
+        "<i>“Disini Bisa Deteksi Berbagai Ekspresi”</i></p>",
         unsafe_allow_html=True
     )
 
