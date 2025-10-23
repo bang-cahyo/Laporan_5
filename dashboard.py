@@ -416,13 +416,13 @@ def show_detect(model):
 # ======================================
 # Routing Halaman Berdasarkan Sidebar
 # ======================================
+
 if st.session_state.page == "about":
     show_about()
 elif st.session_state.page == "detect":
     show_detect(model)
 else:
-    st.write("Selamat datang di YOLO Face Detection Dashboard!")
-
+    show_home()
 # ======================================
 # Footer dengan About
 # ======================================
