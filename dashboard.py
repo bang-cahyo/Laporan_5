@@ -326,6 +326,7 @@ def show_detect(model):
                 # ==========================
                 # Ekspresi wajah (jika ada model)
                 # ==========================
+
                 if len(boxes) > 0:
                     expressions = []  # list untuk menyimpan label tiap wajah
                     for box in boxes:
@@ -341,13 +342,11 @@ def show_detect(model):
                 
                         expressions.append(label)
                 
-                    # Hitung jumlah tiap ekspresi
-                    from collections import Counter
-                    expr_count = Counter(expressions)
+                    # Ambil label unik
+                    unique_expr = list(set(expressions))
                 
-                    # Tampilkan sebagai statistik
-                    for expr, count in expr_count.items():
-                        st.metric(label=f"Wajah {expr}", value=count)
+                    # Tampilkan label unik
+                    st.markdown("**Ekspresi terdeteksi:** " + ", ".join(unique_expr))
 
 
                 # Tombol Download
