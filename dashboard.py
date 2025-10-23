@@ -230,42 +230,6 @@ def show_about():
     if "about_option" not in st.session_state:
         st.session_state.about_option = "Website"
     
-    about_option = st.radio(
-        "", 
-        ["Website", "Penulis"], 
-        index=0 if st.session_state.about_option=="Website" else 1, 
-        horizontal=True
-    )
-    st.session_state.about_option = about_option
-    
-    # Tambahkan CSS untuk membuat radio seperti tombol neon
-    st.markdown(f"""
-    <style>
-    div.stRadio > label {{
-        display: inline-block;
-        margin: 0 10px;
-    }}
-    div.stRadio input:checked + span {{
-        background-color: #00e0ff !important;
-        color: #0b0f19 !important;
-        padding: 0.7em 2em;
-        border-radius: 12px;
-        font-weight: 700;
-        box-shadow: 0 0 15px #00e0ff, 0 0 25px #7a00ff;
-    }}
-    div.stRadio span {{
-        background-color: #151a28;
-        color: #bcd4ff;
-        padding: 0.7em 2em;
-        border-radius: 12px;
-        font-weight: 700;
-        transition: all 0.3s ease;
-    }}
-    div.stRadio span:hover {{
-        box-shadow: 0 0 15px #00e0ff, 0 0 25px #7a00ff;
-    }}
-    </style>
-    """, unsafe_allow_html=True)
 
     # Tombol toggle horizontal
     col1, col2 = st.columns(2, gap="small")
