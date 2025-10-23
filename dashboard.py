@@ -285,61 +285,61 @@ def show_detect(model):
 # ==========================
 # Gunakan Kamera
 # ==========================
-elif pilih_input == "Gunakan Kamera":
-    st.info("📸 Gunakan kamera untuk capture gambar, hasil deteksi muncul di kanan.")
-
-    # Buat dua kolom: kiri kamera, kanan hasil deteksi
-    col_cam, col_after = st.columns(2)
-
-    with col_cam:
-        cam_image = st.camera_input("")
-
-    if cam_image:
-        img = Image.open(cam_image).convert("RGB")
-        img_np = np.array(img)
-        img_np_resized = letterbox_image(img_np, target_size=(640,640))
-
-        # Deteksi YOLO
-        with st.spinner("Detecting faces... 🔍"):
-            start_time = time.time()
-            results = model(img_np_resized, conf=0.15, iou=0.3)
-            inference_time = time.time() - start_time
-
-        # Plot hasil deteksi
-        result_img_resized = results[0].plot()
-        h, w = img_np.shape[:2]
-        result_img_resized = cv2.resize(result_img_resized, (w, h))
-
-        # Ambil boxes jika ada
-        boxes = results[0].boxes.xyxy if results[0].boxes is not None else []
-
-        with col_after:
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.image(result_img_resized, caption="After Detection", use_container_width=True)
-            st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-
-            # ==========================
-            # Statistik / Info Dinamis
-            # ==========================
-            st.metric(label="Jumlah Wajah Terdeteksi", value=len(boxes))
-
-            # ==========================
-            # Ekspresi wajah (jika ada model)
-            # ==========================
-            if len(boxes) > 0:
-                face_cols = st.columns(min(4, len(boxes)))  # max 4 per row
-                for i, box in enumerate(boxes):
-                    x1, y1, x2, y2 = map(int, box[:4])
-                    face_crop = img_np[y1:y2, x1:x2]
-                    face_img = Image.fromarray(face_crop)
-
-                    # Ganti ini dengan model ekspresi asli kalau ada
-                    try:
-                        label = expression_model.predict(face_img)
-                    except:
-                        label = "Unknown"
-
-                    face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}: {label}", width=160)
+    elif pilih_input == "Gunakan Kamera":
+        st.info("📸 Gunakan kamera untuk capture gambar, hasil deteksi muncul di kanan.")
+    
+        # Buat dua kolom: kiri kamera, kanan hasil deteksi
+        col_cam, col_after = st.columns(2)
+    
+        with col_cam:
+            cam_image = st.camera_input("")
+    
+        if cam_image:
+            img = Image.open(cam_image).convert("RGB")
+            img_np = np.array(img)
+            img_np_resized = letterbox_image(img_np, target_size=(640,640))
+    
+            # Deteksi YOLO
+            with st.spinner("Detecting faces... 🔍"):
+                start_time = time.time()
+                results = model(img_np_resized, conf=0.15, iou=0.3)
+                inference_time = time.time() - start_time
+    
+            # Plot hasil deteksi
+            result_img_resized = results[0].plot()
+            h, w = img_np.shape[:2]
+            result_img_resized = cv2.resize(result_img_resized, (w, h))
+    
+            # Ambil boxes jika ada
+            boxes = results[0].boxes.xyxy if results[0].boxes is not None else []
+    
+            with col_after:
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.image(result_img_resized, caption="After Detection", use_container_width=True)
+                st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
+    
+                # ==========================
+                # Statistik / Info Dinamis
+                # ==========================
+                st.metric(label="Jumlah Wajah Terdeteksi", value=len(boxes))
+    
+                # ==========================
+                # Ekspresi wajah (jika ada model)
+                # ==========================
+                if len(boxes) > 0:
+                    face_cols = st.columns(min(4, len(boxes)))  # max 4 per row
+                    for i, box in enumerate(boxes):
+                        x1, y1, x2, y2 = map(int, box[:4])
+                        face_crop = img_np[y1:y2, x1:x2]
+                        face_img = Image.fromarray(face_crop)
+    
+                        # Ganti ini dengan model ekspresi asli kalau ada
+                        try:
+                            label = expression_model.predict(face_img)
+                        except:
+                            label = "Unknown"
+    
+                        face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}: {label}", width=160)
 
 
 
