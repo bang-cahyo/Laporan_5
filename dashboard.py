@@ -127,19 +127,17 @@ def get_downloadable_image(np_img):
     return buf.getvalue()
 
 # ======================================
-# Load Model YOLO
+# Load Model YOLO (langsung pakai custom)
 # ======================================
 @st.cache_resource
-def load_yolo_model(use_custom=False):
-    if use_custom and os.path.exists("model/Cahyo_Laporan4.pt"):
+def load_yolo_model():
+    if os.path.exists("model/Cahyo_Laporan4.pt"):
         return YOLO("model/Cahyo_Laporan4.pt")
     else:
-        # otomatis download model wajah pre-trained
-        return YOLO("https://github.com/ultralytics/ultralytics/releases/download/v8.0/yolov8n-face.pt")
+        st.error("Model Cahyo_Laporan4.pt tidak ditemukan!")
+        return None
 
-# Pilihan model: custom atau pre-trained
-use_custom_model = st.sidebar.checkbox("Gunakan model custom (Cahyo_Laporan4.pt)", value=False)
-model = load_yolo_model(use_custom_model)
+model = load_yolo_model()
 
 # ======================================
 # Sidebar Navigation
@@ -173,13 +171,17 @@ elif page == "Deteksi Wajah":
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
     detect_button = st.button("🚀 Detect Faces")
 
-    if detect_button and uploaded_file:
+    if detect_button and uploaded_file and model:
         img = Image.open(uploaded_file).convert("RGB")
+
+        # Resize agar deteksi lebih akurat
+        max_size = 640
+        img.thumbnail((max_size, max_size))
         img_np = np.array(img)
 
         with st.spinner("Detecting faces... 🔍"):
             start_time = time.time()
-            results = model(img_np)
+            results = model(img_np, conf=0.2)  # conf diturunkan ke 0.2
             inference_time = time.time() - start_time
 
         result_img = results[0].plot()
