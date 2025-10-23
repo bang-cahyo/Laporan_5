@@ -381,8 +381,9 @@ def show_detect(model):
                     mime="image/png"
                 )
 
+if "page" in query_params:
+    st.session_state.page = query_params["page"][0]
 
-# Render halaman sesuai pilihan
 if st.session_state.page == "about":
     show_about()
 elif st.session_state.page == "detect":
