@@ -10,6 +10,7 @@ import os
 import cv2
 from utils import letterbox_image, get_downloadable_image
 from io import BytesIO
+from google.cloud import storage
 
 # Konfigurasi Halaman
 st.set_page_config(
