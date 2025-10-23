@@ -276,6 +276,12 @@ def show_about():
         - Hasil Before/After ditampilkan berdampingan.
         - Download hasil deteksi wajah dalam format PNG.
         - UI Futuristik dengan animasi Neon Glow.
+
+        **Cara Menggunakan:**
+            1. Pilih menu **Deteksi Wajah** di atas.
+            2. Upload gambar dari perangkat Anda menggunakan tombol upload.
+            3. Klik tombol **🚀 Detect Faces** untuk memulai deteksi.
+            4. Hasil deteksi muncul di kolom Before/After, dan dapat diunduh jika diinginkan.
         """)
     else:
         col1_bio, col2_bio = st.columns([1,1])
