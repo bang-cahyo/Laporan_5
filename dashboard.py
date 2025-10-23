@@ -156,13 +156,6 @@ model = load_model()
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# ======================================
-# Header
-# ======================================
-st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
-st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
-st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Futuristic.</p>", unsafe_allow_html=True)
-
 
 # ======================================
 # Sidebar Navigasi Vertikal Elegan & Fungsional
@@ -265,7 +258,7 @@ def show_detect(model):
     # 🔹 Header Futuristik & Deskripsi Model
     # ==============================
     st.markdown("<h1 style='text-align: center; color:#00e0ff;'>😃 Face Expression Detection Dashboard</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #bcd4ff;'>Model: Cahyo_Laporan4.pt | Ekspresi: disgust, anger, fear, happy, pain, sad</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #bcd4ff;'>By Heru Bagus Cahyo</p>", unsafe_allow_html=True)
     st.markdown("---")
 
     # ==============================
