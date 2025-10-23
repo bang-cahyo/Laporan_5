@@ -133,10 +133,10 @@ st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Ac
 # ======================================
 col1, col2 = st.columns([1,1])
 with col1:
-    if st.button("About Me"):
+    if st.button("About Me", key="btn_about"):
         st.session_state.page = "about"
 with col2:
-    if st.button("Deteksi Wajah"):
+    if st.button("Deteksi Wajah", key="btn_detect"):
         st.session_state.page = "detect"
 
 # ======================================
@@ -337,44 +337,51 @@ if st.session_state.page == "about":
     st.markdown('<p class="subtext">Learn more about this web application and its creator.</p>', unsafe_allow_html=True)
     
     # Navigasi vertikal sub-about
-    col_nav, col_content = st.columns([1,3])
-    with col_nav:
-        # index=0 -> About Website, index=1 -> About Author
-        about_option = st.radio("Pilih:", ["Tentang Website", "Tentang Penulis"], index=0) 
-    
-    with col_content:
-        if about_option == "Tentang Website":
-            st.markdown("""
-            **Tentang Website YOLO Face Detection**  
+   col_nav, col_content = st.columns([1, 3])
 
-            Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia.  
-            Tujuan website ini adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat, tanpa perlu menginstal software tambahan atau memahami pemrograman.  
+with col_nav:
+    # Inisialisasi session state jika belum ada
+    if "about_option" not in st.session_state:
+        st.session_state.about_option = "Tentang Website"  # default ke Website
 
-            **Fitur Utama:**  
-            - Upload gambar format JPG, JPEG, atau PNG  
-            - Deteksi wajah otomatis, menampilkan hasil Before/After secara berdampingan  
-            - Download hasil deteksi wajah dalam format PNG  
-            - Tampilan UI futuristik dengan animasi neon untuk pengalaman pengguna yang menarik  
+    # Radio button untuk sub-about dengan key unik
+    about_option = st.radio(
+        "Pilih:",
+        ["Tentang Website", "Tentang Penulis"],
+        index=0 if st.session_state.about_option == "Tentang Website" else 1,
+        key="about_radio"
+    )
 
-            **Cara Penggunaan:**  
-            1. Pilih menu **Deteksi Wajah** di atas.  
-            2. Klik tombol **Upload an image** dan pilih gambar dari perangkat Anda.  
-            3. Klik tombol **🚀 Detect Faces** untuk memulai deteksi.  
-            4. Hasil deteksi akan muncul berdampingan: sebelah kiri **Before** (gambar asli), sebelah kanan **After** (gambar dengan bounding box wajah).  
-            5. Jika ingin menyimpan hasil, klik tombol **Download Detection Result**.  
+    # Update session state
+    st.session_state.about_option = about_option
+
+with col_content:
+    if st.session_state.about_option == "Tentang Website":
+        st.markdown("""
+        **Tentang Website YOLO Face Detection**
+
+        Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia.
+        Tujuan website ini adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat, tanpa perlu menginstal software tambahan atau memahami pemrograman.
+
+        **Fitur Utama:**
+        - Upload gambar format JPG, JPEG, atau PNG
+        - Deteksi wajah otomatis, menampilkan hasil Before/After secara berdampingan
+        - Download hasil deteksi wajah dalam format PNG
+        - Tampilan UI futuristik dengan animasi neon untuk pengalaman pengguna yang menarik
+        """)
+    else:
+        col1_bio, col2_bio = st.columns([1,1])
+        with col1_bio:
+            st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
+        with col2_bio:
+            st.info("""
+            **Nama:** Heru Bagus Cahyo  
+            **Jurusan:** Statistika  
+            **Angkatan:** 2022  
+            **Email:** herubagusapk@gmail.com  
+            **Instagram:** @herubaguscahyo
             """)
-        else:
-            col1_bio, col2_bio = st.columns([1,1])
-            with col1_bio:
-                st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
-            with col2_bio:
-                st.info("""
-                **Nama:** Heru Bagus Cahyo  
-                **Jurusan:** Statistika  
-                **Angkatan:** 2022  
-                **Email:** herubagusapk@gmail.com  
-                **Instagram:** @herubaguscahyo  
-                """)
+
 
 # ======================================
 # Animasi Glow pada Cards
