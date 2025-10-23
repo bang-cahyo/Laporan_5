@@ -291,7 +291,7 @@ def show_detect(model):
             else:
                 st.warning("⚠️ No faces detected in this image.")
 
-    elif pilih_input == "Gunakan Kamera":
+elif pilih_input == "Gunakan Kamera":
     st.info("📸 Ambil foto menggunakan kamera, hasil deteksi akan muncul di sebelahnya.")
 
     # Buat dua kolom: kiri untuk camera_input, kanan untuk hasil deteksi
@@ -337,26 +337,6 @@ def show_detect(model):
             else:
                 st.warning("⚠️ No faces detected in this image.")
 
-
-            # Tombol Download
-            st.download_button(
-                label="💾 Download Detection Result",
-                data=get_downloadable_image(result_img),
-                file_name="hasil_deteksi_kamera.png",
-                mime="image/png"
-            )
-
-            # Tampilkan Crop Wajah Detected
-            if len(boxes) > 0:
-                st.markdown("### Detected Faces")
-                face_cols = st.columns(min(4, len(boxes)))
-                for i, box in enumerate(boxes):
-                    x1, y1, x2, y2 = map(int, box[:4])
-                    face_crop = img_np[y1:y2, x1:x2]
-                    face_img = Image.fromarray(face_crop)
-                    face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
-            else:
-                st.warning("⚠️ No faces detected in this image.")
 
 
 # Render halaman sesuai pilihan
