@@ -332,6 +332,16 @@ def show_detect(model):
                 st.warning("⚠️ No faces detected in this image.")
 
 
+# Render halaman sesuai pilihan
+if st.session_state.page == "about":
+    show_about()
+elif st.session_state.page == "detect":
+    show_detect(model)
+else:
+    st.write("Selamat datang di YOLO Face Detection Dashboard!")
+
+
+
 # ======================================
 # Footer dengan About
 # ======================================
