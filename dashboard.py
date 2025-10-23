@@ -172,10 +172,10 @@ elif page == "Deteksi Wajah":
     detect_button = st.button("🚀 Detect Faces")
 
     if detect_button and uploaded_file:
-    # Buka gambar
+    # buka gambar
     img = Image.open(uploaded_file).convert("RGB")
-
-    # Resize otomatis
+    
+    # resize otomatis
     max_size = 640
     img.thumbnail((max_size, max_size))
     img_np = np.array(img)
@@ -185,33 +185,33 @@ elif page == "Deteksi Wajah":
         results = model(img_np, conf=0.15, iou=0.3)
         inference_time = time.time() - start_time
 
-    # Plot hasil
     result_img = results[0].plot()
     boxes = results[0].boxes.xyxy
 
+    st.markdown("<div class='result-card'>", unsafe_allow_html=True)
+    st.image(result_img, caption="Detection Result", use_container_width=True)
+    st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
 
-        st.markdown("<div class='result-card'>", unsafe_allow_html=True)
-        st.image(result_img, caption="Detection Result", use_container_width=True)
-        st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
+    # Download button
+    st.download_button(
+        label="💾 Download Detection Result",
+        data=get_downloadable_image(result_img),
+        file_name="hasil_deteksi_wajah.png",
+        mime="image/png"
+    )
 
-        st.download_button(
-            label="💾 Download Detection Result",
-            data=get_downloadable_image(result_img),
-            file_name="hasil_deteksi_wajah.png",
-            mime="image/png"
-        )
+    if len(boxes) > 0:
+        st.markdown("### Detected Faces")
+        face_cols = st.columns(min(4, len(boxes)))
+        for i, box in enumerate(boxes):
+            x1, y1, x2, y2 = map(int, box[:4])
+            face_crop = img_np[y1:y2, x1:x2]
+            face_img = Image.fromarray(face_crop)
+            face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
+    else:
+        st.warning("⚠️ No faces detected in this image.")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-        if len(boxes) > 0:
-            st.markdown("### Detected Faces")
-            face_cols = st.columns(min(4, len(boxes)))
-            for i, box in enumerate(boxes):
-                x1, y1, x2, y2 = map(int, box[:4])
-                face_crop = img_np[y1:y2, x1:x2]
-                face_img = Image.fromarray(face_crop)
-                face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
-        else:
-            st.warning("⚠️ No faces detected in this image.")
-        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ======================================
