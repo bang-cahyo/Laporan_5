@@ -110,10 +110,22 @@ with col2:
 # ======================================
 # About Me & About Website
 # ======================================
-if show_about:
+if "page" not in st.session_state:
+    st.session_state.page = None
+
+col1, col2 = st.columns([1,1])
+with col1:
+    if st.button("About Me"):
+        st.session_state.page = "about"
+with col2:
+    if st.button("Deteksi Wajah"):
+        st.session_state.page = "detect"
+
+# Pilih halaman berdasarkan session_state
+if st.session_state.page == "about":
     st.markdown("<h1>About</h1>", unsafe_allow_html=True)
 
-    # Tombol navigasi vertikal untuk sub-about
+    # Sub-menu About
     col_nav, col_content = st.columns([1,3])
     with col_nav:
         about_option = st.radio("Pilih:", ["Tentang Penulis", "Tentang Website"])
@@ -131,30 +143,13 @@ if show_about:
                 **Email:** herubagusapk@gmail.com  
                 **Instagram:** @herubaguscahyo  
                 """)
-    
-        elif about_option == "Tentang Website":
+        else:
             st.markdown("""
             **Tentang Website YOLO Face Detection**  
 
-            Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia.  
-            Tujuan website ini adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat, tanpa perlu menginstal software tambahan atau memahami pemrograman.  
-
-            **Fitur Utama:**  
-            - Upload gambar format JPG, JPEG, atau PNG  
-            - Deteksi wajah otomatis, menampilkan hasil Before/After secara bersebelahan  
-            - Download hasil deteksi wajah dalam format PNG  
-            - Tampilan UI futuristik dengan animasi neon untuk pengalaman pengguna yang menarik  
-
-            **Cara Penggunaan:**  
-            1. Pilih menu **Deteksi Wajah** di atas.  
-            2. Klik tombol **Upload an image** dan pilih gambar dari perangkat Anda.  
-            3. Klik tombol **🚀 Detect Faces** untuk memulai deteksi.  
-            4. Hasil deteksi akan muncul berdampingan: sebelah kiri **Before** (gambar asli), sebelah kanan **After** (gambar dengan bounding box wajah).  
-            5. Jika ingin menyimpan hasil, klik tombol **Download Detection Result**.  
-
-            Website ini dibuat oleh **Heru Bagus Cahyo** menggunakan **Streamlit** dan **Ultralytics YOLOv8**, sehingga dapat berjalan di browser tanpa instalasi tambahan.
+            Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8**.  
+            Tujuan: memudahkan pengguna mendeteksi wajah cepat dan akurat.  
             """)
-
 
 # ======================================
 # Deteksi Wajah
