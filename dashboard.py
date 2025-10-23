@@ -270,60 +270,48 @@ def show_detect(model):
     pilih_input = st.radio("Pilih Sumber Input:", ["🖼️ Upload Gambar", "📷 Gunakan Kamera"], horizontal=True)
 
     # ======================================
-    # 🖼️ MODE UPLOAD GAMBAR
+    # 📷 MODE KAMERA — tampilkan before & after BERDAMPINGAN
     # ======================================
-    if pilih_input == "🖼️ Upload Gambar":
-        uploaded_file = st.file_uploader("📁 Upload Gambar", type=["jpg", "jpeg", "png"])
+    else:
+        camera_input = st.camera_input("📸 Ambil Foto Menggunakan Kamera")
 
-        if uploaded_file is not None:
-            # Konversi file ke image PIL
-            image = Image.open(uploaded_file)
-
-            # Pastikan format RGB
+        if camera_input is not None:
+            image = Image.open(camera_input)
             if image.mode != "RGB":
                 image = image.convert("RGB")
 
-            # Deteksi wajah otomatis
             with st.spinner("🔍 Mendeteksi wajah..."):
-                results = model(image, conf=0.25)  # threshold sensitif
-                result_image = results[0].plot()  # hasil berupa array BGR
-                result_image = Image.fromarray(result_image[..., ::-1])  # ubah ke RGB
+                results = model(image, conf=0.25)
+                result_image = results[0].plot()
+                result_image = Image.fromarray(result_image[..., ::-1])
 
-            # ======================================
-            # 🔹 TAMPILKAN BEFORE - AFTER
-            # ======================================
+            # ==========================
+            # BEFORE-AFTER berdampingan
+            # ==========================
             col1, col2 = st.columns(2)
-
             with col1:
-                st.image(image, caption="🖼️ Gambar Asli", use_container_width=True)
-
+                st.markdown("<h4 style='text-align:center; color:#bcd4ff;'>Gambar Kamera</h4>", unsafe_allow_html=True)
+                st.image(image, use_container_width=True)
             with col2:
-                st.image(result_image, caption="✅ Hasil Deteksi", use_container_width=True)
+                st.markdown("<h4 style='text-align:center; color:#bcd4ff;'>Hasil Deteksi</h4>", unsafe_allow_html=True)
+                st.image(result_image, use_container_width=True)
 
-            # ======================================
-            # 🔹 INFORMASI DETEKSI
-            # ======================================
+            # ==========================
+            # Informasi hasil
+            # ==========================
             num_faces = len(results[0].boxes)
             st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
 
-            # Ekstraksi ekspresi dari hasil deteksi
             if results[0].boxes is not None and len(results[0].boxes) > 0:
-                detected_expressions = [
-                    results[0].names[int(cls)] for cls in results[0].boxes.cls
-                ]
+                detected_expressions = [results[0].names[int(cls)] for cls in results[0].boxes.cls]
                 unique_expressions = sorted(set(detected_expressions))
                 st.markdown(
-                    f"""
-                    <div style='background-color:#0f172a; padding:12px; border-radius:10px;
-                    border:1px solid #00e0ff; color:#00e0ff; text-align:center;'>
-                    😃 <b>Ekspresi Terdeteksi:</b> {', '.join(unique_expressions)}
-                    </div>
-                    """,
+                    f"<div style='background-color:#001830; border-radius:10px; padding:10px; text-align:center; color:#00e0ff;'>"
+                    f"😃 <b>Ekspresi Terdeteksi:</b> {', '.join(unique_expressions)}</div>",
                     unsafe_allow_html=True
                 )
             else:
                 st.warning("😕 Tidak ada ekspresi wajah terdeteksi.")
-
             # ======================================
             # 🔹 DOWNLOAD HASIL DETEKSI
             # ======================================
