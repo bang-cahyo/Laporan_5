@@ -43,8 +43,6 @@ h1 {
     margin-bottom: 25px;
 }
 
-@keyframes typing { from { width: 0 } to { width: 100% } }
-@keyframes blink { 50% { border-color: transparent } }
 .neon-name {
   font-size: 1.2rem;
   color: #00e0ff;
@@ -101,12 +99,6 @@ footer {
     margin-top: 50px;
     font-size: 0.9rem;
 }
-
-@media (max-width: 768px){
-    h1 { font-size: 2rem; }
-    .subtext { font-size: 1rem; }
-    .stButton>button { padding: 0.6em 1.5em; font-size: 0.9rem; }
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -119,14 +111,13 @@ def get_downloadable_image(np_img):
     image.save(buf, format="PNG")
     return buf.getvalue()
 
-# Letterbox resize agar aspect ratio tetap
 def letterbox_image(img, target_size=(640,640)):
     h, w = img.shape[:2]
     target_w, target_h = target_size
     scale = min(target_w/w, target_h/h)
     nw, nh = int(w*scale), int(h*scale)
     img_resized = cv2.resize(img, (nw, nh))
-    canvas = np.full((target_h, target_w, 3), 114, dtype=np.uint8)  # grey padding
+    canvas = np.full((target_h, target_w, 3), 114, dtype=np.uint8)
     top = (target_h - nh) // 2
     left = (target_w - nw) // 2
     canvas[top:top+nh, left:left+nw, :] = img_resized
@@ -146,14 +137,16 @@ def load_yolo_model():
 model = load_yolo_model()
 
 # ======================================
-# Sidebar Navigation
+# Top Navigation Tabs
 # ======================================
-page = st.sidebar.radio("Menu", ["Deteksi Wajah", "About Me"])
+tab = st.tabs(["About Me", "Deteksi Wajah"])
+about_tab, detect_tab = tab
 
 # ======================================
 # About Me
 # ======================================
-if page == "About Me":
+with about_tab:
+    st.markdown("<h1>About Me</h1>", unsafe_allow_html=True)
     col1_bio, col2_bio = st.columns([1,1])
     with col1_bio:
         st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
@@ -169,7 +162,7 @@ if page == "About Me":
 # ======================================
 # Deteksi Wajah
 # ======================================
-elif page == "Deteksi Wajah":
+with detect_tab:
     st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
     st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
     st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>", unsafe_allow_html=True)
@@ -181,32 +174,35 @@ elif page == "Deteksi Wajah":
         if uploaded_file.size > 20*1024*1024:
             st.warning("⚠️ File terlalu besar, maksimal 20 MB")
         else:
-            # Buka gambar & konversi RGB
             img = Image.open(uploaded_file).convert("RGB")
             img_np = np.array(img)
 
             # Histogram equalization
             img_gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
             img_gray = cv2.equalizeHist(img_gray)
-            img_np = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2RGB)
+            img_np_eq = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2RGB)
 
             # Letterbox resize
-            img_np = letterbox_image(img_np, target_size=(640,640))
+            img_np_resized = letterbox_image(img_np_eq, target_size=(640,640))
 
-            # Detect wajah
+            # Detect
             with st.spinner("Detecting faces... 🔍"):
                 start_time = time.time()
-                results = model(img_np, conf=0.15, iou=0.3)
+                results = model(img_np_resized, conf=0.15, iou=0.3)
                 inference_time = time.time() - start_time
 
             result_img = results[0].plot()
             boxes = results[0].boxes.xyxy
 
             st.markdown("<div class='result-card'>", unsafe_allow_html=True)
-            st.image(result_img, caption="Detection Result", use_container_width=True)
+            col_before, col_after = st.columns(2)
+            with col_before:
+                st.image(img, caption="Before Detection", use_column_width=True)
+            with col_after:
+                st.image(result_img, caption="After Detection", use_column_width=True)
             st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
 
-            # Download
+            # Download button
             st.download_button(
                 label="💾 Download Detection Result",
                 data=get_downloadable_image(result_img),
@@ -219,7 +215,7 @@ elif page == "Deteksi Wajah":
                 face_cols = st.columns(min(4, len(boxes)))
                 for i, box in enumerate(boxes):
                     x1, y1, x2, y2 = map(int, box[:4])
-                    face_crop = img_np[y1:y2, x1:x2]
+                    face_crop = img_np_resized[y1:y2, x1:x2]
                     face_img = Image.fromarray(face_crop)
                     face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
             else:
