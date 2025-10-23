@@ -98,20 +98,10 @@ def load_yolo_model():
 model = load_yolo_model()
 
 # ======================================
-# Tombol Navigasi
-# ======================================
-st.markdown("<h1>Dashboard Navigation</h1>", unsafe_allow_html=True)
-col1, col2 = st.columns([1,1])
-with col1:
-    show_about = st.button("About Me")
-with col2:
-    show_detect = st.button("Deteksi Wajah")
-
-# ======================================
-# About Me & About Website
+# Session State untuk navigasi
 # ======================================
 if "page" not in st.session_state:
-    st.session_state.page = None
+    st.session_state.page = "about"  # default halaman awal
 
 col1, col2 = st.columns([1,1])
 with col1:
@@ -121,11 +111,12 @@ with col2:
     if st.button("Deteksi Wajah"):
         st.session_state.page = "detect"
 
-# Pilih halaman berdasarkan session_state
+# ======================================
+# Halaman About
+# ======================================
 if st.session_state.page == "about":
     st.markdown("<h1>About</h1>", unsafe_allow_html=True)
 
-    # Sub-menu About
     col_nav, col_content = st.columns([1,3])
     with col_nav:
         about_option = st.radio("Pilih:", ["Tentang Penulis", "Tentang Website"])
@@ -147,16 +138,29 @@ if st.session_state.page == "about":
             st.markdown("""
             **Tentang Website YOLO Face Detection**  
 
-            Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8**.  
-            Tujuan: memudahkan pengguna mendeteksi wajah cepat dan akurat.  
+            Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia.  
+            Tujuan website ini adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat, tanpa perlu menginstal software tambahan atau memahami pemrograman.  
+
+            **Fitur Utama:**  
+            - Upload gambar format JPG, JPEG, atau PNG  
+            - Deteksi wajah otomatis, menampilkan hasil Before/After secara berdampingan  
+            - Download hasil deteksi wajah dalam format PNG  
+            - Tampilan UI futuristik dengan animasi neon  
+
+            **Cara Penggunaan:**  
+            1. Pilih menu **Deteksi Wajah** di atas.  
+            2. Klik tombol **Upload an image** dan pilih gambar dari perangkat Anda.  
+            3. Klik tombol **🚀 Detect Faces** untuk memulai deteksi.  
+            4. Hasil deteksi akan muncul berdampingan: sebelah kiri **Before**, sebelah kanan **After**.  
+            5. Klik tombol **Download Detection Result** untuk menyimpan hasil.
             """)
 
 # ======================================
-# Deteksi Wajah
+# Halaman Deteksi Wajah
 # ======================================
-elif show_detect:
+elif st.session_state.page == "detect":
     st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
-    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg","jpeg","png"])
     detect_button = st.button("🚀 Detect Faces")
 
     if detect_button and uploaded_file:
@@ -179,7 +183,6 @@ elif show_detect:
                 inference_time = time.time() - start_time
 
             result_img = results[0].plot()
-            boxes = results[0].boxes.xyxy
 
             st.markdown("<div class='result-card'>", unsafe_allow_html=True)
             col_before, col_after = st.columns(2)
@@ -187,6 +190,7 @@ elif show_detect:
                 st.image(img, caption="Before Detection", use_column_width=True)
             with col_after:
                 st.image(result_img, caption="After Detection", use_column_width=True)
+
             st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
 
             st.download_button(
