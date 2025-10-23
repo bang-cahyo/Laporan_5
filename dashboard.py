@@ -275,11 +275,9 @@ def show_detect(model):
             )
 
     elif pilih_input == "Gunakan Kamera":
-        # Kolom kamera / hasil sejajar
-        col_cam, col_result = st.columns(2)
+        col_result = st.columns(1)[0]  # kolom tunggal untuk hasil
 
-        with col_cam:
-            cam_image = st.camera_input(label="")  # label dikosongkan
+        cam_image = st.camera_input(label="")  # label dikosongkan
 
         if cam_image:
             img = Image.open(cam_image).convert("RGB")
@@ -298,8 +296,6 @@ def show_detect(model):
             # Resize hasil deteksi supaya mengikuti rasio kamera
             result_img_resized = cv2.resize(result_img, (w_input, h_input))
 
-            with col_cam:
-                st.image(img_np, caption="Kamera Input", use_container_width=True)
             with col_result:
                 st.image(result_img_resized, caption="Hasil Deteksi", use_container_width=True)
                 st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
