@@ -277,14 +277,12 @@ def show_detect(model):
                 mime="image/png"
             )
 
-    else:  # Gunakan Kamera
-        st.info("📸 Ambil foto menggunakan kamera, hasil deteksi akan muncul di sebelahnya.")
-    
+    elif pilih_input == "Gunakan Kamera":
+        # Buat dua kolom: kiri untuk kamera, kanan untuk hasil
         col_cam, col_result = st.columns([1, 1])
     
         with col_cam:
-            # Hilangkan label di camera_input
-            cam_image = st.camera_input(label="")  # Kosongkan label
+            cam_image = st.camera_input(label="")  # Label dikosongkan, tidak ada teks
     
         if cam_image:
             img = Image.open(cam_image).convert("RGB")
