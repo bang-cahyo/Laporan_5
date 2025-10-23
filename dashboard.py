@@ -292,16 +292,18 @@ def show_detect(model):
                 st.warning("⚠️ No faces detected in this image.")
 
     elif pilih_input == "Gunakan Kamera":
-        # Kamera input tanpa label tambahan
-        cam_image = st.camera_input(label="")
+        # Buat dua kolom: kiri untuk kamera, kanan untuk hasil deteksi
+        col_before, col_after = st.columns(2)
+    
+        with col_before:
+            cam_image = st.camera_input(label="")  # Tombol take photo muncul di sini
     
         if cam_image:
-            # Convert image
             img = Image.open(cam_image).convert("RGB")
             img_np = np.array(img)
             h_input, w_input = img_np.shape[:2]
     
-            # Resize untuk YOLO
+            # Resize untuk model YOLO
             img_np_resized = letterbox_image(img_np, target_size=(640,640))
     
             # Deteksi wajah
@@ -314,10 +316,7 @@ def show_detect(model):
             # Resize hasil deteksi supaya mengikuti rasio asli kamera
             result_img_resized = cv2.resize(result_img, (w_input, h_input))
     
-            # Tampilkan sejajar: kiri kamera, kanan hasil deteksi
-            col_before, col_after = st.columns(2)
-            with col_before:
-                st.image(img_np, caption="Before Detection", use_container_width=True)
+            # Tampilkan hasil After di kolom kanan
             with col_after:
                 st.image(result_img_resized, caption="After Detection", use_container_width=True)
     
