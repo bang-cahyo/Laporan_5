@@ -185,7 +185,7 @@ with st.sidebar:
 
     menu = st.radio(
         "Navigasi:",
-        ["🏠 Home", "🧍 About Me", "📷 Deteksi Wajah"],
+        ["🏠 Home", "🧍 About", "📷 Deteksi Wajah"],
         index=0
     )
 
