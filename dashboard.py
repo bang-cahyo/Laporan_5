@@ -144,10 +144,15 @@ page = st.sidebar.radio("Menu", ["Deteksi Wajah", "About Me"])
 # Halaman About Me
 # ======================================
 if page == "About Me":
-    col1_bio, col2_bio = st.columns([1,1])
-    with col1_bio:
-        st.image("https://i.ibb.co/2c8v4P7/foto-saya.jpg", caption="Heru Bagus Cahyo", width=200)
-    with col2_bio:
+    st.markdown("<h1>About Me</h1>", unsafe_allow_html=True)
+    st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
+    
+    # Layout dua kolom: kiri foto, kanan biodata
+    col1, col2 = st.columns([1, 2], gap="large")
+    with col1:
+        # Pakai file lokal jika deploy lokal, atau URL jika Streamlit Cloud
+        st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
+    with col2:
         st.info("""
         **Nama:** Heru Bagus Cahyo  
         **Jurusan:** Statistika  
