@@ -267,7 +267,7 @@ def show_detect(model):
     # ==============================
     # 🔹 Pilihan Input (Upload / Kamera)
     # ==============================
-    pilih_input = st.radio("Pilih Sumber Input:", ["🖼️ Upload Gambar", "📷 Gunakan Kamera"], horizontal=True)
+    if pilih_input = st.radio("Pilih Sumber Input:", ["🖼️ Upload Gambar", "📷 Gunakan Kamera"], horizontal=True)
     # ======================================
     # 📷 MODE KAMERA — tampilkan before & after BERDAMPINGAN
     # ======================================
