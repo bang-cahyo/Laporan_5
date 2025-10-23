@@ -297,53 +297,55 @@ def show_detect(model):
     # =========================
     # Gunakan Kamera
     # =========================
-    elif pilih_input == "Gunakan Kamera":
-        st.info("📸 Ambil foto menggunakan kamera, hasil deteksi akan muncul di sebelahnya.")
+elif pilih_input == "Gunakan Kamera":
+    st.info("📸 Ambil foto menggunakan kamera, hasil deteksi akan muncul di sebelahnya.")
 
-        # Buat dua kolom: kiri untuk camera_input, kanan untuk hasil deteksi
-        col_cam, col_result = st.columns([1, 1])
+    # Buat dua kolom: kiri untuk camera_input, kanan untuk hasil deteksi
+    col_cam, col_result = st.columns([1, 1])
 
-        with col_cam:
-            cam_image = st.camera_input("Ambil Foto")
+    with col_cam:
+        cam_image = st.camera_input("Ambil Foto")
+        st.write("")  # spasi tambahan untuk kerapian
 
-        if cam_image:
-            img = Image.open(cam_image).convert("RGB")
-            img_np = np.array(img)
-            img_np_resized = letterbox_image(img_np, target_size=(640,640))
+    if cam_image:
+        img = Image.open(cam_image).convert("RGB")
+        img_np = np.array(img)
+        img_np_resized = letterbox_image(img_np, target_size=(640,640))
 
-            # Deteksi YOLO
-            with st.spinner("Detecting faces... 🔍"):
-                start_time = time.time()
-                results = model(img_np_resized, conf=0.15, iou=0.3)
-                inference_time = time.time() - start_time
+        # Deteksi YOLO
+        with st.spinner("Detecting faces... 🔍"):
+            start_time = time.time()
+            results = model(img_np_resized, conf=0.15, iou=0.3)
+            inference_time = time.time() - start_time
 
-            result_img = results[0].plot()
-            boxes = results[0].boxes.xyxy
+        result_img = results[0].plot()
+        boxes = results[0].boxes.xyxy
 
-            # Tampilkan di kolom hasil
-            with col_result:
-                st.image(result_img, caption="Hasil Deteksi Kamera", use_column_width=True)
-                st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
+        # Tampilkan di kolom hasil
+        with col_result:
+            st.image(result_img, caption="Hasil Deteksi Kamera", use_container_width=True)
+            st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
 
-                # Tombol Download
-                st.download_button(
-                    label="💾 Download Detection Result",
-                    data=get_downloadable_image(result_img),
-                    file_name="hasil_deteksi_kamera.png",
-                    mime="image/png"
-                )
+            # Tombol Download
+            st.download_button(
+                label="💾 Download Detection Result",
+                data=get_downloadable_image(result_img),
+                file_name="hasil_deteksi_kamera.png",
+                mime="image/png"
+            )
 
-                # Tampilkan Crop Wajah Detected
-                if len(boxes) > 0:
-                    st.markdown("### Detected Faces")
-                    face_cols = st.columns(min(4, len(boxes)))
-                    for i, box in enumerate(boxes):
-                        x1, y1, x2, y2 = map(int, box[:4])
-                        face_crop = img_np[y1:y2, x1:x2]
-                        face_img = Image.fromarray(face_crop)
-                        face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
-                else:
-                    st.warning("⚠️ No faces detected in this image.")
+            # Tampilkan Crop Wajah Detected
+            if len(boxes) > 0:
+                st.markdown("### Detected Faces")
+                face_cols = st.columns(min(4, len(boxes)))
+                for i, box in enumerate(boxes):
+                    x1, y1, x2, y2 = map(int, box[:4])
+                    face_crop = img_np[y1:y2, x1:x2]
+                    face_img = Image.fromarray(face_crop)
+                    face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", use_container_width=True)
+            else:
+                st.warning("⚠️ No faces detected in this image.")
+
 
 
 
