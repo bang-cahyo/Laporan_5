@@ -152,9 +152,27 @@ model = load_yolo_model()
 # ======================================
 # Bagian UI — Tampilan Utama
 # ======================================
-col1, col2 = st.columns([1.2, 1], gap="large")
+# ======================================
+# Sidebar Navigation
+# ======================================
+page = st.sidebar.radio("Menu", ["Deteksi Wajah", "About Me"])
 
-with col1:
+if page == "About Me":
+    # Layout 2 kolom untuk foto dan biodata
+    col1_bio, col2_bio = st.columns([1,1])
+    with col1_bio:
+        # Gunakan URL foto agar aman di Streamlit Cloud
+        st.image("https://i.ibb.co/2c8v4P7/foto-saya.jpg", caption="Heru Bagus Cahyo", width=200)
+    with col2_bio:
+        st.info("""
+        **Nama:** Heru Bagus Cahyo  
+        **Jurusan:** Statistika  
+        **Angkatan:** 2022  
+        **Email:** herubagusapk@gmail.com  
+        **Instagram:** @herubaguscahyo  
+        """)
+
+elif page == "Deteksi Wajah":
     st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
     st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
     st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>", unsafe_allow_html=True)
@@ -162,19 +180,42 @@ with col1:
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
     detect_button = st.button("🚀 Detect Faces")
 
-    # Tombol About Me otomatis menampilkan biodata + foto
-    if st.button("💾 About Me"):
-        col1_bio, col2_bio = st.columns([1,1])
-        with col1_bio:
-            st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
-        with col2_bio:
-            st.info("""
-            **Nama:** Heru Bagus Cahyo  
-            **Jurusan:** Statistika  
-            **Angkatan:** 2022  
-            **Email:** herubagusapk@gmail.com  
-            **Instagram:** @herubaguscahyo  
-            """)
+    if detect_button and uploaded_file:
+        img = Image.open(uploaded_file).convert("RGB")
+        img_np = np.array(img)
+
+        with st.spinner("Detecting faces... 🔍"):
+            start_time = time.time()
+            results = model(img_np)
+            inference_time = time.time() - start_time
+
+        result_img = results[0].plot()
+        boxes = results[0].boxes.xyxy
+
+        st.markdown("<div class='result-card'>", unsafe_allow_html=True)
+        st.image(result_img, caption="Detection Result", use_container_width=True)
+        st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
+
+        st.download_button(
+            label="💾 Download Detection Result",
+            data=get_downloadable_image(result_img),
+            file_name="hasil_deteksi_wajah.png",
+            mime="image/png"
+        )
+
+        if len(boxes) > 0:
+            st.markdown("### Detected Faces")
+            face_cols = st.columns(min(4, len(boxes)))
+            for i, box in enumerate(boxes):
+                x1, y1, x2, y2 = map(int, box[:4])
+                face_crop = img_np[y1:y2, x1:x2]
+                face_img = Image.fromarray(face_crop)
+                face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
+        else:
+            st.warning("⚠️ No faces detected in this image.")
+        st.markdown("</div>", unsafe_allow_html=True)
+    elif not uploaded_file:
+        st.info("📁 Please upload an image to begin detection.")
 
 with col2:
     st.empty()
