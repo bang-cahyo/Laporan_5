@@ -335,7 +335,49 @@ st.markdown("""
 if st.session_state.page == "about":
     st.markdown('<h1 class="neon-title">About This App</h1>', unsafe_allow_html=True)
     st.markdown('<p class="subtext">Learn more about this web application and its creator.</p>', unsafe_allow_html=True)
-    
+
+    # Navigasi vertikal sub-about
+    col_nav, col_content = st.columns([1, 3])
+
+    with col_nav:
+        if "about_option" not in st.session_state:
+            st.session_state.about_option = "Tentang Website"  # default
+
+        about_option = st.radio(
+            "Pilih:",
+            ["Tentang Website", "Tentang Penulis"],
+            index=0 if st.session_state.about_option == "Tentang Website" else 1,
+            key="about_radio"  # key unik agar tidak duplicate ID
+        )
+        st.session_state.about_option = about_option
+
+    with col_content:
+        if st.session_state.about_option == "Tentang Website":
+            st.markdown("""
+            **Tentang Website YOLO Face Detection**
+
+            Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia.
+            Tujuan website ini adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat, tanpa perlu menginstal software tambahan atau memahami pemrograman.
+
+            **Fitur Utama:**
+            - Upload gambar format JPG, JPEG, atau PNG
+            - Deteksi wajah otomatis, menampilkan hasil Before/After secara berdampingan
+            - Download hasil deteksi wajah dalam format PNG
+            - Tampilan UI futuristik dengan animasi neon untuk pengalaman pengguna yang menarik
+            """)
+        else:
+            col1_bio, col2_bio = st.columns([1,1])
+            with col1_bio:
+                st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
+            with col2_bio:
+                st.info("""
+                **Nama:** Heru Bagus Cahyo  
+                **Jurusan:** Statistika  
+                **Angkatan:** 2022  
+                **Email:** herubagusapk@gmail.com  
+                **Instagram:** @herubaguscahyo
+                """)
+
     # Navigasi vertikal sub-about
    col_nav, col_content = st.columns([1, 3])
 
