@@ -1,6 +1,5 @@
-# ======================================
+
 # dashboard.py - YOLO Face Detection
-# ======================================
 import streamlit as st
 from ultralytics import YOLO
 import numpy as np
@@ -10,18 +9,15 @@ import time
 import os
 import cv2
 from utils import letterbox_image, get_downloadable_image
-# ======================================
+
 # Konfigurasi Halaman
-# ======================================
 st.set_page_config(
     page_title="YOLO Face Detection Dashboard",
     page_icon="🤖",
     layout="wide"
 )
 
-# ======================================
 # CSS Futuristik / Neon
-# ======================================
 st.markdown("""
 <style>
 body, .stApp {
@@ -113,9 +109,7 @@ footer {
 </style>
 """, unsafe_allow_html=True)
 
-# ======================================
 # Utility Functions
-# ======================================
 def get_downloadable_image(np_img):
     """Convert numpy array to downloadable PNG bytes."""
     image = Image.fromarray(np_img)
@@ -136,9 +130,7 @@ def letterbox_image(img, target_size=(640,640)):
     canvas[top:top+nh, left:left+nw, :] = img_resized
     return canvas
 
-# ======================================
 # Load YOLO Model
-# ======================================
 @st.cache_resource
 def load_model():
     model_path = "model/Cahyo_Laporan4.pt"
@@ -150,16 +142,12 @@ def load_model():
 
 model = load_model()
 
-# ======================================
 # Session State untuk Navigasi
-# ======================================
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
 
-# ======================================
 # Sidebar Navigasi Vertikal Elegan & Fungsional
-# ======================================
 with st.sidebar:
     st.markdown("""
         <style>
@@ -196,9 +184,8 @@ with st.sidebar:
     elif menu == "📷 Deteksi Wajah":
         st.session_state.page = "detect"
         
-# ======================================
 # Halaman Home 
-# ======================================
+
 def show_home():
     # Hero Section Neon
     st.markdown(
@@ -234,9 +221,7 @@ def show_home():
         unsafe_allow_html=True
     )
 
-# ======================================
 # Halaman About
-# ======================================
 def show_about():
     st.markdown('<h1 class="neon-title">About This App</h1>', unsafe_allow_html=True)
     st.markdown('<p class="subtext">Learn more about this web application and its creator.</p>', unsafe_allow_html=True)
@@ -287,30 +272,26 @@ def show_about():
                 **Instagram:** @herubaguscahyo
                 """)
 
-# ======================================
+
 # Halaman Deteksi Wajah - Mode Kamera
-# ======================================
 from io import BytesIO
 from PIL import Image
 import PIL.ImageOps
 import streamlit as st
 
 def show_detect(model):
-    # ==============================
+    
     # 🔹 Header Futuristik
-    # ==============================
     st.markdown("<h1 style='text-align: center; color:#00e0ff;'>😃 Face Expression Detection Dashboard</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #bcd4ff;'>By Heru Bagus Cahyo</p>", unsafe_allow_html=True)
     st.markdown("---")
 
-    # ==============================
+    
     # 🔹 Pilihan Input
-    # ==============================
     pilih_input = st.radio("Pilih Sumber Input:", ["🖼️ Upload Gambar", "📷 Gunakan Kamera"], horizontal=True)
 
-    # ======================================
+    
     # 🖼️ MODE UPLOAD GAMBAR
-    # ======================================
     if pilih_input == "🖼️ Upload Gambar":
         uploaded_file = st.file_uploader("📁 Upload Gambar", type=["jpg", "jpeg", "png"])
 
@@ -347,9 +328,8 @@ def show_detect(model):
                 mime="image/png"
             )
 
-    # ======================================
+    
     # 📷 MODE KAMERA — Before & After KANAN-KIRI
-    # ======================================
     else:
         col1, col2 = st.columns(2)
 
@@ -410,19 +390,16 @@ def show_detect(model):
             
 
 
-# ======================================
-# Routing Halaman Berdasarkan Sidebar
-# ======================================
 
+# Routing Halaman Berdasarkan Sidebar
 if st.session_state.page == "about":
     show_about()
 elif st.session_state.page == "detect":
     show_detect(model)
 else:
     show_home()
-# ======================================
+
 # Footer dengan About
-# ======================================
 st.markdown(f"""
 <footer>
     🤖 YOLO Face Detection Dashboard | Created by <b>Heru Bagus Cahyo</b><br>
