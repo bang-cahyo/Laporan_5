@@ -129,21 +129,10 @@ if st.session_state.page == "about":
     st.markdown("<h2>About</h2>", unsafe_allow_html=True)
     col_nav, col_content = st.columns([1,3])
     with col_nav:
-        about_option = st.radio("Pilih:", ["Tentang Penulis", "Tentang Website"])
+        # urutan sub-menu diubah: Website dulu, Penulis kedua
+        about_option = st.radio("Pilih:", ["Tentang Website", "Tentang Penulis"])
     with col_content:
-        if about_option == "Tentang Penulis":
-            col1_bio, col2_bio = st.columns([1,1])
-            with col1_bio:
-                st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
-            with col2_bio:
-                st.info("""
-                **Nama:** Heru Bagus Cahyo  
-                **Jurusan:** Statistika  
-                **Angkatan:** 2022  
-                **Email:** herubagusapk@gmail.com  
-                **Instagram:** @herubaguscahyo  
-                """)
-        elif about_option == "Tentang Website":
+        if about_option == "Tentang Website":
             st.markdown("""
             **Tentang Website YOLO Face Detection**  
 
@@ -163,7 +152,18 @@ if st.session_state.page == "about":
             4. Hasil deteksi akan muncul berdampingan: sebelah kiri **Before** (gambar asli), sebelah kanan **After** (gambar dengan bounding box wajah).  
             5. Jika ingin menyimpan hasil, klik tombol **Download Detection Result**.  
             """)
-
+        elif about_option == "Tentang Penulis":
+            col1_bio, col2_bio = st.columns([1,1])
+            with col1_bio:
+                st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
+            with col2_bio:
+                st.info("""
+                **Nama:** Heru Bagus Cahyo  
+                **Jurusan:** Statistika  
+                **Angkatan:** 2022  
+                **Email:** herubagusapk@gmail.com  
+                **Instagram:** @herubaguscahyo  
+                """)
 # ======================================
 # Halaman Deteksi Wajah
 # ======================================
