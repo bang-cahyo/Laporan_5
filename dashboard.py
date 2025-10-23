@@ -9,6 +9,8 @@ import time
 import os
 import cv2
 from utils import letterbox_image, get_downloadable_image
+from io import BytesIO
+
 
 # Konfigurasi Halaman
 st.set_page_config(
