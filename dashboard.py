@@ -163,15 +163,25 @@ st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
 st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
 st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Futuristic.</p>", unsafe_allow_html=True)
 
+
 # ======================================
-# Sidebar Navigasi Vertikal Elegan
+# Sidebar Navigasi Vertikal Elegan (Fungsional)
 # ======================================
-st.markdown("""
-<div class="sidebar">
-    <a href="#" onclick="window.location.href='?page=about'">💫 About</a>
-    <a href="#" onclick="window.location.href='?page=detect'">📸 Detection</a>
-</div>
-""", unsafe_allow_html=True)
+with st.container():
+    st.markdown("""
+    <div class="sidebar">
+        <h3 style='text-align:center; color:#00e0ff;'>Menu</h3>
+    </div>
+    """, unsafe_allow_html=True)
+
+    with st.container():
+        about_btn = st.button("💫 About", key="about_sidebar")
+        detect_btn = st.button("📸 Detection", key="detect_sidebar")
+
+        if about_btn:
+            st.session_state.page = "about"
+        elif detect_btn:
+            st.session_state.page = "detect"
 
 st.markdown("""
 <style>
@@ -187,24 +197,22 @@ st.markdown("""
     box-shadow: 0 0 25px #00e0ff50;
     z-index: 100;
 }
-.sidebar a {
-    display: block;
-    padding: 12px;
-    color: #bcd4ff;
-    text-decoration: none;
-    font-weight: 600;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    text-align: center;
+button[kind="secondary"] {
+    background: linear-gradient(90deg, #00e0ff, #7a00ff);
+    color: white !important;
+    font-weight: 600 !important;
+    border: none !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    margin-bottom: 10px !important;
+    transition: all 0.3s ease !important;
 }
-.sidebar a:hover {
-    background: linear-gradient(90deg, #00e0ff50, #7a00ff50);
-    color: #fff;
+button[kind="secondary"]:hover {
+    box-shadow: 0 0 25px #00e0ff80;
     transform: translateX(4px);
 }
 </style>
 """, unsafe_allow_html=True)
-
 
 # ======================================
 # Halaman About
@@ -381,16 +389,12 @@ def show_detect(model):
                     mime="image/png"
                 )
 
-    if "page" in query_params:
-        st.session_state.page = query_params["page"][0]
-    
     if st.session_state.page == "about":
         show_about()
     elif st.session_state.page == "detect":
         show_detect(model)
     else:
         st.write("Selamat datang di YOLO Face Detection Dashboard!")
-
 
 
 # ======================================
