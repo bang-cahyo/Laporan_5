@@ -171,7 +171,7 @@ elif page == "Deteksi Wajah":
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
     detect_button = st.button("🚀 Detect Faces")
 
-    if detect_button and uploaded_file:
+if detect_button and uploaded_file:
     # buka gambar
     img = Image.open(uploaded_file).convert("RGB")
     
@@ -192,7 +192,6 @@ elif page == "Deteksi Wajah":
     st.image(result_img, caption="Detection Result", use_container_width=True)
     st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
 
-    # Download button
     st.download_button(
         label="💾 Download Detection Result",
         data=get_downloadable_image(result_img),
