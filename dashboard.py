@@ -197,16 +197,24 @@ def show_about():
         if st.session_state.about_option == "Tentang Website":
             st.markdown("""
             **Tentang Website YOLO Face Detection**
-
-            Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia.
-            Tujuan website ini adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat.
-
+    
+            Website ini dibuat untuk mendeteksi wajah pada gambar secara otomatis menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia. 
+            Tujuannya adalah memudahkan pengguna mendeteksi wajah tanpa perlu menginstal software tambahan atau memahami pemrograman.
+    
             **Fitur Utama:**
-            - Upload gambar format JPG, JPEG, atau PNG
-            - Deteksi wajah otomatis, menampilkan hasil Before/After
-            - Download hasil deteksi
-            - UI Futuristik Neon Glow
+            - Upload gambar dalam format JPG, JPEG, atau PNG.
+            - Deteksi wajah secara otomatis dengan bounding box.
+            - Hasil Before/After ditampilkan berdampingan untuk memudahkan perbandingan.
+            - Download hasil deteksi wajah dalam format PNG.
+            - UI Futuristik dengan animasi Neon Glow untuk pengalaman interaktif.
+    
+            **Cara Menggunakan:**
+            1. Pilih menu **Deteksi Wajah** di atas.
+            2. Upload gambar dari perangkat Anda menggunakan tombol upload.
+            3. Klik tombol **🚀 Detect Faces** untuk memulai deteksi.
+            4. Hasil deteksi muncul di kolom Before/After, dan dapat diunduh jika diinginkan.
             """)
+
         else:
             col1_bio, col2_bio = st.columns([1,1])
             with col1_bio:
