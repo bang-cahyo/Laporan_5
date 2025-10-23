@@ -168,26 +168,21 @@ elif page == "Deteksi Wajah":
     st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
     st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>", unsafe_allow_html=True)
     
-   uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-detect_button = st.button("🚀 Detect Faces")
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+    detect_button = st.button("🚀 Detect Faces")
 
-if detect_button and uploaded_file:
-    # Cek ukuran file
-    if uploaded_file.size > 20*1024*1024:  # 20 MB
-        st.warning("⚠️ File terlalu besar, maksimal 20 MB")
-    else:
-        img = Image.open(uploaded_file).convert("RGB")
-
-        # Resize sebelum deteksi
-        max_size = 640
-        img.thumbnail((max_size, max_size))
-        img_np = np.array(img)
-
-        # Deteksi wajah
-        with st.spinner("Detecting faces... 🔍"):
-            start_time = time.time()
-            results = model(img_np, conf=0.2)  # conf lebih rendah untuk menangkap wajah kecil
-            inference_time = time.time() - start_time
+    if detect_button and uploaded_file:
+        if uploaded_file.size > 20*1024*1024:  # 20 MB
+            st.warning("⚠️ File terlalu besar, maksimal 20 MB")
+        else:
+            img = Image.open(uploaded_file).convert("RGB")
+            # resize sebelum deteksi
+            img.thumbnail((640, 640))
+            img_np = np.array(img)
+            with st.spinner("Detecting faces... 🔍"):
+                start_time = time.time()
+                results = model(img_np, conf=0.2)
+                inference_time = time.time() - start_time
 
         result_img = results[0].plot()
         boxes = results[0].boxes.xyxy
