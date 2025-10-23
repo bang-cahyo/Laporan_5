@@ -260,7 +260,6 @@ def show_detect(model):
                 inference_time = time.time() - start_time
 
             result_img = results[0].plot()
-            boxes = results[0].boxes.xyxy
 
             # Before / After
             st.markdown("<div class='result-card'>", unsafe_allow_html=True)
@@ -279,20 +278,7 @@ def show_detect(model):
                 mime="image/png"
             )
 
-            # Crop wajah
-            if len(boxes) > 0:
-                st.markdown("### Detected Faces")
-                face_cols = st.columns(min(4, len(boxes)))
-                for i, box in enumerate(boxes):
-                    x1, y1, x2, y2 = map(int, box[:4])
-                    face_crop = img_np[y1:y2, x1:x2]
-                    face_img = Image.fromarray(face_crop)
-                    face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", use_container_width=True)
-            else:
-                st.warning("⚠️ No faces detected in this image.")
-
-    # ===== Kamera =====
-    else:  # "Gunakan Kamera"
+    else:  # Gunakan Kamera
         st.info("📸 Ambil foto menggunakan kamera, hasil deteksi akan muncul di sebelahnya.")
 
         col_cam, col_result = st.columns([1, 1])
@@ -313,7 +299,6 @@ def show_detect(model):
                 inference_time = time.time() - start_time
 
             result_img = results[0].plot()
-            boxes = results[0].boxes.xyxy
 
             with col_result:
                 st.image(result_img, caption="Hasil Deteksi Kamera", use_container_width=True)
@@ -325,17 +310,6 @@ def show_detect(model):
                     file_name="hasil_deteksi_kamera.png",
                     mime="image/png"
                 )
-
-                if len(boxes) > 0:
-                    st.markdown("### Detected Faces")
-                    face_cols = st.columns(min(4, len(boxes)))
-                    for i, box in enumerate(boxes):
-                        x1, y1, x2, y2 = map(int, box[:4])
-                        face_crop = img_np[y1:y2, x1:x2]
-                        face_img = Image.fromarray(face_crop)
-                        face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", use_container_width=True)
-                else:
-                    st.warning("⚠️ No faces detected in this image.")
 
 
 # Render halaman sesuai pilihan
