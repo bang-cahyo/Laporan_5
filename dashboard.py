@@ -165,54 +165,43 @@ st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Ac
 
 
 # ======================================
-# Sidebar Navigasi Vertikal Elegan (Fungsional)
+# Sidebar Navigasi Vertikal Elegan & Fungsional
 # ======================================
-with st.container():
+with st.sidebar:
     st.markdown("""
-    <div class="sidebar">
-        <h3 style='text-align:center; color:#00e0ff;'>Menu</h3>
-    </div>
+        <style>
+        .sidebar-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #00e0ff;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00e0ff, 0 0 20px #7a00ff;
+        }
+        .sidebar-subtext {
+            color: #bcd4ff;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        </style>
     """, unsafe_allow_html=True)
 
-    with st.container():
-        about_btn = st.button("💫 About", key="about_sidebar")
-        detect_btn = st.button("📸 Detection", key="detect_sidebar")
+    st.markdown("<div class='sidebar-title'>🤖 YOLO Face Detection</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sidebar-subtext'>by Heru Bagus Cahyo</div>", unsafe_allow_html=True)
 
-        if about_btn:
-            st.session_state.page = "about"
-        elif detect_btn:
-            st.session_state.page = "detect"
+    menu = st.radio(
+        "Navigasi:",
+        ["🏠 Home", "🧍 About Me", "📷 Deteksi Wajah"],
+        index=0
+    )
 
-st.markdown("""
-<style>
-.sidebar {
-    position: fixed;
-    left: 25px;
-    top: 150px;
-    width: 180px;
-    background: rgba(15, 20, 40, 0.7);
-    border-radius: 20px;
-    padding: 15px;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 0 25px #00e0ff50;
-    z-index: 100;
-}
-button[kind="secondary"] {
-    background: linear-gradient(90deg, #00e0ff, #7a00ff);
-    color: white !important;
-    font-weight: 600 !important;
-    border: none !important;
-    border-radius: 12px !important;
-    width: 100% !important;
-    margin-bottom: 10px !important;
-    transition: all 0.3s ease !important;
-}
-button[kind="secondary"]:hover {
-    box-shadow: 0 0 25px #00e0ff80;
-    transform: translateX(4px);
-}
-</style>
-""", unsafe_allow_html=True)
+    if menu == "🏠 Home":
+        st.session_state.page = "home"
+    elif menu == "🧍 About Me":
+        st.session_state.page = "about"
+    elif menu == "📷 Deteksi Wajah":
+        st.session_state.page = "detect"
 
 # ======================================
 # Halaman About
@@ -389,13 +378,15 @@ def show_detect(model):
                     mime="image/png"
                 )
 
-    if st.session_state.page == "about":
-        show_about()
-    elif st.session_state.page == "detect":
-        show_detect(model)
-    else:
-        st.write("Selamat datang di YOLO Face Detection Dashboard!")
-
+# ======================================
+# Routing Halaman Berdasarkan Sidebar
+# ======================================
+if st.session_state.page == "about":
+    show_about()
+elif st.session_state.page == "detect":
+    show_detect(model)
+else:
+    st.write("Selamat datang di YOLO Face Detection Dashboard!")
 
 # ======================================
 # Footer dengan About
