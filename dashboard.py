@@ -40,6 +40,7 @@ h1 {
     border-radius: 12px;
     padding: 0.6em 2em;
     margin-right: 10px;
+    margin-bottom: 10px;
 }
 .stButton>button:hover {
     box-shadow: 0 0 20px #00e0ff80;
@@ -100,9 +101,19 @@ model = load_yolo_model()
 # ======================================
 # Session State untuk navigasi
 # ======================================
-if "page" not in st.session_state:
-    st.session_state.page = "about"  # default halaman awal
+if 'page' not in st.session_state:
+    st.session_state.page = "detect"
 
+# ======================================
+# UI/UX Tetap di atas semua halaman
+# ======================================
+st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
+st.markdown("<p style='font-size:1.2rem; color:#b0b0b0;'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>", unsafe_allow_html=True)
+st.markdown("<div style='font-size:1rem; color:#00e0ff; text-shadow:0 0 8px rgba(0,224,255,0.6);'>Created by Heru Bagus Cahyo</div>", unsafe_allow_html=True)
+
+# ======================================
+# Tombol Navigasi
+# ======================================
 col1, col2 = st.columns([1,1])
 with col1:
     if st.button("About Me"):
@@ -115,14 +126,12 @@ with col2:
 # Halaman About
 # ======================================
 if st.session_state.page == "about":
-    st.markdown("<h1>About</h1>", unsafe_allow_html=True)
-
+    st.markdown("<h2>About</h2>", unsafe_allow_html=True)
     col_nav, col_content = st.columns([1,3])
     with col_nav:
-        about_option = st.radio("Pilih:", ["About Author", "About Website"])
-
+        about_option = st.radio("Pilih:", ["Tentang Penulis", "Tentang Website"])
     with col_content:
-        if about_option == "About Author":
+        if about_option == "Tentang Penulis":
             col1_bio, col2_bio = st.columns([1,1])
             with col1_bio:
                 st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
@@ -134,7 +143,7 @@ if st.session_state.page == "about":
                 **Email:** herubagusapk@gmail.com  
                 **Instagram:** @herubaguscahyo  
                 """)
-        else:
+        elif about_option == "Tentang Website":
             st.markdown("""
             **Tentang Website YOLO Face Detection**  
 
@@ -143,26 +152,24 @@ if st.session_state.page == "about":
 
             **Fitur Utama:**  
             - Upload gambar format JPG, JPEG, atau PNG  
-            - Deteksi wajah otomatis, menampilkan hasil Before/After secara berdampingan  
+            - Deteksi wajah otomatis, menampilkan hasil Before/After secara bersebelahan  
             - Download hasil deteksi wajah dalam format PNG  
-            - Tampilan UI futuristik dengan animasi neon  
+            - Tampilan UI futuristik dengan animasi neon untuk pengalaman pengguna yang menarik  
 
             **Cara Penggunaan:**  
             1. Pilih menu **Deteksi Wajah** di atas.  
             2. Klik tombol **Upload an image** dan pilih gambar dari perangkat Anda.  
             3. Klik tombol **🚀 Detect Faces** untuk memulai deteksi.  
-            4. Hasil deteksi akan muncul berdampingan: sebelah kiri **Before**, sebelah kanan **After**.  
-            5. Klik tombol **Download Detection Result** untuk menyimpan hasil.
+            4. Hasil deteksi akan muncul berdampingan: sebelah kiri **Before** (gambar asli), sebelah kanan **After** (gambar dengan bounding box wajah).  
+            5. Jika ingin menyimpan hasil, klik tombol **Download Detection Result**.  
             """)
 
 # ======================================
 # Halaman Deteksi Wajah
 # ======================================
 elif st.session_state.page == "detect":
-    st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Upload an image", type=["jpg","jpeg","png"])
     detect_button = st.button("🚀 Detect Faces")
-
     if detect_button and uploaded_file:
         if uploaded_file.size > 20*1024*1024:
             st.warning("⚠️ File terlalu besar, maksimal 20 MB")
@@ -174,7 +181,6 @@ elif st.session_state.page == "detect":
             img_gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
             img_gray = cv2.equalizeHist(img_gray)
             img_np_eq = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2RGB)
-
             img_np_resized = letterbox_image(img_np_eq, target_size=(640,640))
 
             with st.spinner("Detecting faces... 🔍"):
@@ -183,6 +189,7 @@ elif st.session_state.page == "detect":
                 inference_time = time.time() - start_time
 
             result_img = results[0].plot()
+            boxes = results[0].boxes.xyxy
 
             st.markdown("<div class='result-card'>", unsafe_allow_html=True)
             col_before, col_after = st.columns(2)
@@ -190,9 +197,7 @@ elif st.session_state.page == "detect":
                 st.image(img, caption="Before Detection", use_column_width=True)
             with col_after:
                 st.image(result_img, caption="After Detection", use_column_width=True)
-
             st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-
             st.download_button(
                 label="💾 Download Detection Result",
                 data=get_downloadable_image(result_img),
