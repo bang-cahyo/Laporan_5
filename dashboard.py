@@ -5,6 +5,7 @@ from PIL import Image
 import io
 import time
 import os
+import cv2
 
 # ======================================
 # Konfigurasi Halaman
@@ -56,14 +57,6 @@ h1 {
   margin-bottom: 15px;
 }
 
-.credit {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #00e0ff;
-    text-shadow: 0 0 8px rgba(0, 224, 255, 0.6);
-    margin-bottom: 15px;
-}
-
 .stButton>button {
     background: linear-gradient(90deg, #00e0ff, #7a00ff);
     color: white;
@@ -85,7 +78,6 @@ h1 {
     border-radius: 20px;
     padding: 20px;
     box-shadow: 0 0 30px rgba(0,0,0,0.4);
-    margin-top: 20px;
 }
 
 .stImage > img {
@@ -126,6 +118,19 @@ def get_downloadable_image(np_img):
     buf = io.BytesIO()
     image.save(buf, format="PNG")
     return buf.getvalue()
+
+# Letterbox resize agar aspect ratio tetap
+def letterbox_image(img, target_size=(640,640)):
+    h, w = img.shape[:2]
+    target_w, target_h = target_size
+    scale = min(target_w/w, target_h/h)
+    nw, nh = int(w*scale), int(h*scale)
+    img_resized = cv2.resize(img, (nw, nh))
+    canvas = np.full((target_h, target_w, 3), 114, dtype=np.uint8)  # grey padding
+    top = (target_h - nh) // 2
+    left = (target_w - nw) // 2
+    canvas[top:top+nh, left:left+nw, :] = img_resized
+    return canvas
 
 # ======================================
 # Load Model YOLO
@@ -168,23 +173,27 @@ elif page == "Deteksi Wajah":
     st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
     st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
     st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>", unsafe_allow_html=True)
-
-    uploaded_file = st.file_uploader("Upload an image", type=["jpg","jpeg","png"])
+    
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
     detect_button = st.button("🚀 Detect Faces")
 
     if detect_button and uploaded_file:
-        # Cek ukuran
         if uploaded_file.size > 20*1024*1024:
             st.warning("⚠️ File terlalu besar, maksimal 20 MB")
         else:
+            # Buka gambar & konversi RGB
             img = Image.open(uploaded_file).convert("RGB")
-
-            # Resize agar deteksi optimal
-            max_dim = 1024
-            img.thumbnail((max_dim, max_dim))
             img_np = np.array(img)
 
-            # Deteksi wajah dengan confidence rendah dan iou rendah agar wajah jauh/dekat tetap terdeteksi
+            # Histogram equalization
+            img_gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
+            img_gray = cv2.equalizeHist(img_gray)
+            img_np = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2RGB)
+
+            # Letterbox resize
+            img_np = letterbox_image(img_np, target_size=(640,640))
+
+            # Detect wajah
             with st.spinner("Detecting faces... 🔍"):
                 start_time = time.time()
                 results = model(img_np, conf=0.15, iou=0.3)
@@ -193,12 +202,11 @@ elif page == "Deteksi Wajah":
             result_img = results[0].plot()
             boxes = results[0].boxes.xyxy
 
-            # Card hasil deteksi
             st.markdown("<div class='result-card'>", unsafe_allow_html=True)
             st.image(result_img, caption="Detection Result", use_container_width=True)
             st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
 
-            # Download button
+            # Download
             st.download_button(
                 label="💾 Download Detection Result",
                 data=get_downloadable_image(result_img),
@@ -206,7 +214,6 @@ elif page == "Deteksi Wajah":
                 mime="image/png"
             )
 
-            # Crop wajah
             if len(boxes) > 0:
                 st.markdown("### Detected Faces")
                 face_cols = st.columns(min(4, len(boxes)))
