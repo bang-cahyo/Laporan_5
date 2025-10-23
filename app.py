@@ -1,5 +1,5 @@
 import streamlit as st
-from some_model_file import show_detect  # pastikan file show_detect ada di folder project kamu
+from dashboard import show_detect  # pastikan file show_detect ada di folder project kamu
 
 # =========================
 # INISIALISASI MODEL YOLO
