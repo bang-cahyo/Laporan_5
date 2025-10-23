@@ -111,7 +111,7 @@ with col2:
 # About Me
 # ======================================
 if show_about:
-    st.markdown("<h1>About Me</h1>", unsafe_allow_html=True)
+    st.markdown("<h1>About </h1>", unsafe_allow_html=True)
     col1_bio, col2_bio = st.columns([1,1])
     with col1_bio:
         st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
