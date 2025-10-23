@@ -195,6 +195,39 @@ with st.sidebar:
         st.session_state.page = "about"
     elif menu == "📷 Deteksi Wajah":
         st.session_state.page = "detect"
+# ======================================
+# Halaman Home
+# ======================================
+def show_home():
+    # Hero Section
+    st.markdown("<h1 class='neon-title' style='text-align:center;'>🤖 YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#bcd4ff; font-size:1.2rem;'>Aplikasi web untuk mendeteksi wajah dan ekspresi secara real-time dengan teknologi YOLOv8.</p>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    # Tombol navigasi cepat ke halaman lain
+    col1, col2 = st.columns(2, gap="medium")
+    with col1:
+        if st.button("🧍 Pelajari Tentang Aplikasi"):
+            st.session_state.page = "about"
+            st.experimental_rerun()  # langsung lompat ke About
+    with col2:
+        if st.button("📷 Mulai Deteksi Wajah"):
+            st.session_state.page = "detect"
+            st.experimental_rerun()  # langsung lompat ke Deteksi Wajah
+
+    st.markdown("---")
+
+    # Ringkasan Fitur Singkat
+    col1, col2, col3 = st.columns(3, gap="medium")
+    with col1:
+        st.markdown("<div class='result-card' style='text-align:center;'>📷 Upload & Kamera</div>", unsafe_allow_html=True)
+    with col2:
+        st.markdown("<div class='result-card' style='text-align:center;'>✅ Deteksi Otomatis</div>", unsafe_allow_html=True)
+    with col3:
+        st.markdown("<div class='result-card' style='text-align:center;'>💾 Simpan Hasil</div>", unsafe_allow_html=True)
+
+    # Footer mini / info pembuat
+    st.markdown("<p style='text-align:center; color:#bcd4ff; margin-top:40px;'>Dikembangkan oleh <b>Heru Bagus Cahyo</b> — Mahasiswa Statistika Universitas Syiah Kuala</p>", unsafe_allow_html=True)
 
 # ======================================
 # Halaman About
@@ -379,38 +412,8 @@ if st.session_state.page == "about":
     show_about()
 elif st.session_state.page == "detect":
     show_detect(model)
-
-else:
-    # Hero Section
-    st.markdown("<h1 class='neon-title' style='text-align:center;'>🤖 YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#bcd4ff; font-size:1.2rem;'>Aplikasi web untuk mendeteksi wajah dan ekspresi secara real-time dengan teknologi YOLOv8.</p>", unsafe_allow_html=True)
-    st.markdown("---")
-
-    # Tombol navigasi cepat ke halaman lain
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🧍 Pelajari Tentang Aplikasi"):
-            st.session_state.page = "about"
-            st.rerun()
-    with col2:
-        if st.button("📷 Mulai Deteksi Wajah"):
-            st.session_state.page = "detect"
-            st.rerun()
-
-    st.markdown("---")
-    
-    # Opsional: ringkasan fitur singkat
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown("<div class='result-card' style='text-align:center;'>📷 Upload & Kamera</div>", unsafe_allow_html=True)
-    with col2:
-        st.markdown("<div class='result-card' style='text-align:center;'>✅ Deteksi Otomatis</div>", unsafe_allow_html=True)
-    with col3:
-        st.markdown("<div class='result-card' style='text-align:center;'>💾 Simpan Hasil</div>", unsafe_allow_html=True)
-
-    # Footer mini / info pembuat
-    st.markdown("<p style='text-align:center; color:#bcd4ff; margin-top:40px;'>Dikembangkan oleh <b>Heru Bagus Cahyo</b> — Mahasiswa Statistika Universitas Syiah Kuala</p>", unsafe_allow_html=True)
-
+else:  # default ke Home
+    show_home()
 
 
 # ======================================
