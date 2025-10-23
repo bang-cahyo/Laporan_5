@@ -283,36 +283,63 @@ def show_detect(model):
             if image.mode != "RGB":
                 image = image.convert("RGB")
 
-            # Tampilkan gambar original
-            st.image(image, caption="🖼️ Gambar Asli", use_container_width=False)
-
             # Deteksi wajah otomatis
             with st.spinner("🔍 Mendeteksi wajah..."):
-                results = model(image, conf=0.25)  # lebih sensitif
+                results = model(image, conf=0.25)  # threshold sensitif
                 result_image = results[0].plot()  # hasil berupa array BGR
                 result_image = Image.fromarray(result_image[..., ::-1])  # ubah ke RGB
 
-            # Tampilkan hasil deteksi
-            st.image(result_image, caption="✅ Hasil Deteksi", use_container_width=False)
+            # ======================================
+            # 🔹 TAMPILKAN BEFORE - AFTER
+            # ======================================
+            col1, col2 = st.columns(2)
 
-            # Tambahkan informasi jumlah deteksi
+            with col1:
+                st.image(image, caption="🖼️ Gambar Asli", use_container_width=True)
+
+            with col2:
+                st.image(result_image, caption="✅ Hasil Deteksi", use_container_width=True)
+
+            # ======================================
+            # 🔹 INFORMASI DETEKSI
+            # ======================================
             num_faces = len(results[0].boxes)
             st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
 
-            # Fungsi bantu untuk download hasil
+            # Ekstraksi ekspresi dari hasil deteksi
+            if results[0].boxes is not None and len(results[0].boxes) > 0:
+                detected_expressions = [
+                    results[0].names[int(cls)] for cls in results[0].boxes.cls
+                ]
+                unique_expressions = sorted(set(detected_expressions))
+                st.markdown(
+                    f"""
+                    <div style='background-color:#0f172a; padding:12px; border-radius:10px;
+                    border:1px solid #00e0ff; color:#00e0ff; text-align:center;'>
+                    😃 <b>Ekspresi Terdeteksi:</b> {', '.join(unique_expressions)}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            else:
+                st.warning("😕 Tidak ada ekspresi wajah terdeteksi.")
+
+            # ======================================
+            # 🔹 DOWNLOAD HASIL DETEKSI
+            # ======================================
             def get_downloadable_image(img):
                 buf = BytesIO()
                 img.save(buf, format="PNG")
                 byte_im = buf.getvalue()
                 return byte_im
 
-            # Tombol download hasil
             st.download_button(
                 label="💾 Download Hasil Deteksi",
                 data=get_downloadable_image(result_image),
                 file_name="hasil_deteksi_wajah.png",
                 mime="image/png"
             )
+
     # ==============================
     # Gunakan Kamera
     # ==============================
