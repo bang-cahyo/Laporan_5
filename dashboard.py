@@ -327,20 +327,27 @@ def show_detect(model):
                 # Ekspresi wajah (jika ada model)
                 # ==========================
                 if len(boxes) > 0:
-                    face_cols = st.columns(min(4, len(boxes)))  # max 4 per row
-                    for i, box in enumerate(boxes):
+                    expressions = []  # list untuk menyimpan label tiap wajah
+                    for box in boxes:
                         x1, y1, x2, y2 = map(int, box[:4])
                         face_crop = img_np[y1:y2, x1:x2]
                         face_img = Image.fromarray(face_crop)
-    
-                        # Ganti ini dengan model ekspresi asli kalau ada
+                
+                        # Prediksi ekspresi wajah (contoh dummy)
                         try:
-                            label = expression_model.predict(face_img)
+                            label = expression_model.predict(face_img)  # ganti sesuai model
                         except:
                             label = "Unknown"
-    
-                        face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}: {label}", width=160)
-
+                
+                        expressions.append(label)
+                
+                    # Hitung jumlah tiap ekspresi
+                    from collections import Counter
+                    expr_count = Counter(expressions)
+                
+                    # Tampilkan sebagai statistik
+                    for expr, count in expr_count.items():
+                        st.metric(label=f"Wajah {expr}", value=count)
 
 
                 # Tombol Download
