@@ -319,16 +319,13 @@ def show_detect(model):
                 st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
                 # Ekstraksi ekspresi dari hasil YOLO
                 if results[0].boxes is not None and len(results[0].boxes) > 0:
-                    # Mapping class id ke label ekspresi
-                    labels_map = {0: "disgust", 1: "anger", 2: "fear", 3: "happy", 4: "pain", 5: "sad"}
-                    
-                    # Ambil class id dari semua box hasil YOLO
-                    detected_expressions = [labels_map.get(int(cls), "unknown") for cls in results[0].boxes.cls]
-                    
-                    # Hanya ambil ekspresi unik
+                    # Ambil nama kelas langsung dari model YOLO
+                    detected_expressions = [
+                        results[0].names[int(cls)] 
+                        for cls in results[0].boxes.cls
+                    ]
+
                     unique_expressions = sorted(set(detected_expressions))
-                    
-                    # Tampilkan hasil ekspresi
                     st.markdown(
                         f"<div class='info-box'>😃 Ekspresi Terdeteksi: {', '.join(unique_expressions)}</div>", 
                         unsafe_allow_html=True
