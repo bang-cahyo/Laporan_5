@@ -231,10 +231,6 @@ def show_about():
 # Halaman Deteksi Wajah
 # ======================================
 
-# ======================================
-# Halaman Deteksi Wajah
-# ======================================
-
 def show_detect(model):
     st.markdown('<h2 class="neon-title">YOLO Face Detection</h2>', unsafe_allow_html=True)
 
@@ -309,7 +305,13 @@ def show_detect(model):
                 results = model(img_np_resized, conf=0.15, iou=0.3)
                 inference_time = time.time() - start_time
 
-            result_img_resized = results[0].plot()
+
+            # Dapatkan hasil plot sebagai array
+            result_img_resized = results[0].plot()  # biasanya 640x640
+            
+            # Resize result_img_resized agar sesuai dengan ukuran input asli (Before)
+            h, w = img_np.shape[:2]
+            result_img_resized = cv2.resize(result_img_resized, (w, h))
 
             with col_after:
                 st.markdown("<br>", unsafe_allow_html=True)  # Spasi sedikit
