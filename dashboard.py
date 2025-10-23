@@ -277,7 +277,7 @@ def show_detect(model):
                 mime="image/png"
             )
 
-else:  # Gunakan Kamera
+    else:  # Gunakan Kamera
     st.info("📸 Ambil foto menggunakan kamera, hasil deteksi akan muncul di sebelahnya.")
 
     col_cam, col_result = st.columns([1, 1])
