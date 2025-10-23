@@ -287,46 +287,82 @@ def show_detect(model):
     st.markdown("---")
 
     
-    # 🔹 Pilihan Input
-    pilih_input = st.radio("Pilih Sumber Input:", ["🖼️ Upload Gambar", "📷 Gunakan Kamera"], horizontal=True)
-
+  
+# 🔹 Pilihan Input 
+    col1, col2 = st.columns(2, gap="small")
     
-    # 🖼️ MODE UPLOAD GAMBAR
-    if pilih_input == "🖼️ Upload Gambar":
-        uploaded_file = st.file_uploader("📁 Upload Gambar", type=["jpg", "jpeg", "png"])
-
-        if uploaded_file is not None:
-            image = Image.open(uploaded_file).convert("RGB")
-
-            with st.spinner("🔍 Mendeteksi wajah..."):
-                results = model(image, conf=0.25)
-                result_image = results[0].plot()
-                result_image = Image.fromarray(result_image[..., ::-1])
-
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("<h4 style='text-align:center; color:#bcd4ff;'>Gambar Asli</h4>", unsafe_allow_html=True)
-                st.image(image, use_container_width=True)
-            with col2:
-                st.markdown("<h4 style='text-align:center; color:#bcd4ff;'>Hasil Deteksi</h4>", unsafe_allow_html=True)
-                st.image(result_image, use_container_width=True)
-
-            num_faces = len(results[0].boxes)
-            st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
-
-            # Tombol download hasil
-            def get_downloadable_image(img):
-                buf = BytesIO()
-                img.save(buf, format="PNG")
-                return buf.getvalue()
-
-            result_img_resized = result_image.resize(image.size)
-            st.download_button(
-                label="💾 Download Hasil Deteksi",
-                data=get_downloadable_image(result_img_resized),
-                file_name="hasil_deteksi_wajah.png",
-                mime="image/png"
-            )
+    if "input_mode" not in st.session_state:
+        st.session_state.input_mode = "upload"
+    
+    with col1:
+        if st.button("🖼️ Upload Gambar"):
+            st.session_state.input_mode = "upload"
+    with col2:
+        if st.button("📷 Gunakan Kamera"):
+            st.session_state.input_mode = "camera"
+    
+    # Gaya tombol neon aktif/non-aktif
+    st.markdown(f"""
+    <style>
+    div.stButton > button:first-child {{
+        background: {'#00e0ff' if st.session_state.input_mode=='upload' else '#151a28'};
+        color: {'#0b0f19' if st.session_state.input_mode=='upload' else '#bcd4ff'};
+        font-weight: 700;
+        border-radius: 12px;
+        padding: 0.7em 2em;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }}
+    div.stButton > button:last-child {{
+        background: {'#00e0ff' if st.session_state.input_mode=='camera' else '#151a28'};
+        color: {'#0b0f19' if st.session_state.input_mode=='camera' else '#bcd4ff'};
+        font-weight: 700;
+        border-radius: 12px;
+        padding: 0.7em 2em;
+        transition: all 0.3s ease;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
+    
+    pilih_input = "🖼️ Upload Gambar" if st.session_state.input_mode=="upload" else "📷 Gunakan Kamera"
+    
+        
+        # 🖼️ MODE UPLOAD GAMBAR
+        if pilih_input == "🖼️ Upload Gambar":
+            uploaded_file = st.file_uploader("📁 Upload Gambar", type=["jpg", "jpeg", "png"])
+    
+            if uploaded_file is not None:
+                image = Image.open(uploaded_file).convert("RGB")
+    
+                with st.spinner("🔍 Mendeteksi wajah..."):
+                    results = model(image, conf=0.25)
+                    result_image = results[0].plot()
+                    result_image = Image.fromarray(result_image[..., ::-1])
+    
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown("<h4 style='text-align:center; color:#bcd4ff;'>Gambar Asli</h4>", unsafe_allow_html=True)
+                    st.image(image, use_container_width=True)
+                with col2:
+                    st.markdown("<h4 style='text-align:center; color:#bcd4ff;'>Hasil Deteksi</h4>", unsafe_allow_html=True)
+                    st.image(result_image, use_container_width=True)
+    
+                num_faces = len(results[0].boxes)
+                st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
+    
+                # Tombol download hasil
+                def get_downloadable_image(img):
+                    buf = BytesIO()
+                    img.save(buf, format="PNG")
+                    return buf.getvalue()
+    
+                result_img_resized = result_image.resize(image.size)
+                st.download_button(
+                    label="💾 Download Hasil Deteksi",
+                    data=get_downloadable_image(result_img_resized),
+                    file_name="hasil_deteksi_wajah.png",
+                    mime="image/png"
+                )
 
     
     # 📷 MODE KAMERA — Before & After KANAN-KIRI
