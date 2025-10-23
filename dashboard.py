@@ -345,6 +345,7 @@ def show_detect(model):
     # ======================================
     else:
         camera_input = st.camera_input("📸 Ambil Foto Menggunakan Kamera")
+
         if camera_input is not None:
             image = Image.open(camera_input)
             if image.mode != "RGB":
@@ -355,24 +356,24 @@ def show_detect(model):
                 result_image = results[0].plot()
                 result_image = Image.fromarray(result_image[..., ::-1])
 
-            # Tampilkan hasil deteksi langsung (tanpa before)
+            # Langsung tampilkan hasil deteksi (tanpa before)
             st.image(result_image, caption="✅ Hasil Deteksi dari Kamera", use_container_width=True)
 
             # Jumlah wajah terdeteksi
             num_faces = len(results[0].boxes)
             st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
 
-            # Ekstraksi ekspresi
+            # Ekspresi wajah
             if results[0].boxes is not None and len(results[0].boxes) > 0:
                 detected_expressions = [results[0].names[int(cls)] for cls in results[0].boxes.cls]
                 unique_expressions = sorted(set(detected_expressions))
                 st.markdown(
-                    f"<div class='info-box'>😃 Ekspresi Terdeteksi: {', '.join(unique_expressions)}</div>",
+                    f"<div style='background-color:#001830; border-radius:10px; padding:10px; text-align:center; color:#00e0ff;'>"
+                    f"😃 <b>Ekspresi Terdeteksi:</b> {', '.join(unique_expressions)}</div>",
                     unsafe_allow_html=True
                 )
             else:
                 st.warning("😕 Tidak ada ekspresi wajah terdeteksi.")
-
                
                 # Samakan ukuran hasil deteksi dengan gambar asli
                 result_img_resized = result_image.resize(image.size)
