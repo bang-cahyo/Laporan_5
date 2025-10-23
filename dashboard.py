@@ -275,8 +275,6 @@ def show_detect(model):
             )
 
     elif pilih_input == "Gunakan Kamera":
-        col_result = st.columns(1)[0]  # kolom tunggal untuk hasil
-
         cam_image = st.camera_input(label="")  # label dikosongkan
 
         if cam_image:
@@ -296,15 +294,20 @@ def show_detect(model):
             # Resize hasil deteksi supaya mengikuti rasio kamera
             result_img_resized = cv2.resize(result_img, (w_input, h_input))
 
-            with col_result:
-                st.image(result_img_resized, caption="Hasil Deteksi", use_container_width=True)
-                st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-                st.download_button(
-                    label="💾 Download Detection Result",
-                    data=get_downloadable_image(result_img_resized),
-                    file_name="hasil_deteksi_kamera.png",
-                    mime="image/png"
-                )
+            # Tampilkan Before (kamera) dan After (hasil deteksi) sejajar
+            col_before, col_after = st.columns(2)
+            with col_before:
+                st.image(img_np, caption="Before Detection", use_container_width=True)
+            with col_after:
+                st.image(result_img_resized, caption="After Detection", use_container_width=True)
+
+            st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
+            st.download_button(
+                label="💾 Download Detection Result",
+                data=get_downloadable_image(result_img_resized),
+                file_name="hasil_deteksi_kamera.png",
+                mime="image/png"
+            )
 
 
 
