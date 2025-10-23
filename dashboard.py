@@ -323,15 +323,22 @@ def show_detect(model):
             if camera_input is not None:
                 image = Image.open(camera_input).convert("RGB")
                 image = PIL.ImageOps.exif_transpose(image)
-                image = image.resize((640, 640))
 
+                # Simpan ukuran asli kamera
+                original_size = image.size  # (width, height)
+
+                # Jalankan model YOLO
                 with st.spinner("🔍 Mendeteksi wajah..."):
                     results = model(image, conf=0.25)
-                    result_image = results[0].plot()
-                    result_image = Image.fromarray(result_image[..., ::-1])
+                    result_array = results[0].plot()
+                    result_image = Image.fromarray(result_array[..., ::-1])
 
+                # 🧩 Samakan ukuran hasil deteksi dengan ukuran asli kamera
+                result_image_resized = result_image.resize(original_size)
+
+                # Tampilkan hasil sejajar dengan rasio sama
                 st.markdown("<h4 style='text-align:center;'>✅ Hasil Deteksi</h4>", unsafe_allow_html=True)
-                st.image(result_image, use_container_width=True)
+                st.image(result_image_resized, use_container_width=True)
 
                 # Jumlah wajah
                 num_faces = len(results[0].boxes)
@@ -340,7 +347,7 @@ def show_detect(model):
                 else:
                     st.warning("😕 Tidak ada wajah terdeteksi.")
 
-                # Deteksi ekspresi
+                # Deteksi ekspresi (jika ada)
                 if hasattr(results[0], "names") and results[0].boxes is not None and len(results[0].boxes) > 0:
                     detected_expressions = [results[0].names[int(cls)] for cls in results[0].boxes.cls]
                     unique_expressions = sorted(set(detected_expressions))
@@ -350,21 +357,19 @@ def show_detect(model):
                         unsafe_allow_html=True
                     )
 
-                # Tombol download hasil
+                # Tombol download
                 def get_downloadable_image(img):
                     buf = BytesIO()
                     img.save(buf, format="PNG")
                     return buf.getvalue()
 
-                result_img_resized = result_image.resize(image.size)
                 st.download_button(
                     label="💾 Download Hasil Deteksi",
-                    data=get_downloadable_image(result_img_resized),
+                    data=get_downloadable_image(result_image_resized),
                     file_name="hasil_deteksi_wajah.png",
                     mime="image/png"
                 )
-            else:
-                st.info("👈 Ambil gambar terlebih dahulu dari kamera di kiri untuk melihat hasil deteksi di sini.")
+            
 
 
 # ======================================
