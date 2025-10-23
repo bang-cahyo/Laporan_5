@@ -233,13 +233,12 @@ def show_about():
 def show_detect(model):
     st.markdown('<h2 class="neon-title">YOLO Face Detection</h2>', unsafe_allow_html=True)
 
-    # Pilih sumber input
     pilih_input = st.radio("Pilih Sumber Input:", ["Upload Gambar", "Gunakan Kamera"])
 
     if pilih_input == "Upload Gambar":
         uploaded_file = st.file_uploader("Upload an image", type=["jpg","jpeg","png"])
         detect_button = st.button("🚀 Detect Faces")
-        
+
         if detect_button and uploaded_file:
             if uploaded_file.size > 20*1024*1024:
                 st.warning("⚠️ File terlalu besar, maksimal 20 MB")
@@ -247,72 +246,70 @@ def show_detect(model):
 
             img = Image.open(uploaded_file).convert("RGB")
             img_np = np.array(img)
-            img_gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-            img_gray = cv2.equalizeHist(img_gray)
-            img_np_eq = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2RGB)
-            img_np_resized = letterbox_image(img_np_eq, target_size=(640,640))
 
-            # Deteksi YOLO
+            # Resize YOLO input
+            img_np_resized = letterbox_image(img_np, target_size=(640,640))
+
             with st.spinner("Detecting faces... 🔍"):
                 start_time = time.time()
                 results = model(img_np_resized, conf=0.15, iou=0.3)
                 inference_time = time.time() - start_time
 
             result_img = results[0].plot()
+            # Resize hasil deteksi mengikuti rasio asli input
+            result_img_resized = cv2.resize(result_img, (img_np.shape[1], img_np.shape[0]))
 
-            # Tampilkan Before / After
-            st.markdown("<div class='result-card'>", unsafe_allow_html=True)
+            # Tampilkan Before / After sejajar
             col_before, col_after = st.columns(2)
             with col_before:
-                st.image(img, caption="Before Detection", use_container_width=True)
+                st.image(img_np, caption="Before Detection", use_container_width=True)
             with col_after:
-                st.image(result_img, caption="After Detection", use_container_width=True)
-            st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
+                st.image(result_img_resized, caption="After Detection", use_container_width=True)
 
-            # Tombol Download
+            st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
             st.download_button(
                 label="💾 Download Detection Result",
-                data=get_downloadable_image(result_img),
+                data=get_downloadable_image(result_img_resized),
                 file_name="hasil_deteksi_wajah.png",
                 mime="image/png"
             )
 
     elif pilih_input == "Gunakan Kamera":
-        # Buat dua kolom: kiri untuk kamera, kanan untuk hasil
-        col_cam, col_result = st.columns([1, 1])
-    
+        # Kolom kamera / hasil sejajar
+        col_cam, col_result = st.columns(2)
+
         with col_cam:
-            cam_image = st.camera_input(label="")  # Label dikosongkan, tidak ada teks
-    
+            cam_image = st.camera_input(label="")  # label dikosongkan
+
         if cam_image:
             img = Image.open(cam_image).convert("RGB")
             img_np = np.array(img)
             h_input, w_input = img_np.shape[:2]
-    
-            # Resize untuk YOLO tetap 640x640
+
+            # Resize untuk YOLO
             img_np_resized = letterbox_image(img_np, target_size=(640,640))
-    
+
             with st.spinner("Detecting faces... 🔍"):
                 start_time = time.time()
                 results = model(img_np_resized, conf=0.15, iou=0.3)
                 inference_time = time.time() - start_time
-    
-            # Hasil deteksi model
+
             result_img = results[0].plot()
-    
-            # Resize hasil deteksi supaya mengikuti rasio asli kamera
+            # Resize hasil deteksi supaya mengikuti rasio kamera
             result_img_resized = cv2.resize(result_img, (w_input, h_input))
-    
+
+            with col_cam:
+                st.image(img_np, caption="Kamera Input", use_container_width=True)
             with col_result:
-                st.image(result_img_resized, caption="Hasil Deteksi Kamera", use_container_width=True)
+                st.image(result_img_resized, caption="Hasil Deteksi", use_container_width=True)
                 st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-    
                 st.download_button(
                     label="💾 Download Detection Result",
                     data=get_downloadable_image(result_img_resized),
                     file_name="hasil_deteksi_kamera.png",
                     mime="image/png"
                 )
+
 
 
 # Render halaman sesuai pilihan
