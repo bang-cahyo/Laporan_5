@@ -223,54 +223,72 @@ def show_home():
 
 # Halaman About
 def show_about():
-    st.markdown('<h1 class="neon-title">About This App</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtext">Learn more about this web application and its creator.</p>', unsafe_allow_html=True)
+    st.markdown('<h1 class="neon-title" style="text-align:center;">About This App</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="subtext" style="text-align:center;">Learn more about this web application and its creator.</p>', unsafe_allow_html=True)
 
-    col_nav, col_content = st.columns([1, 3])
-    with col_nav:
-        if "about_option" not in st.session_state:
-            st.session_state.about_option = "Tentang Website"
-        about_option = st.radio(
-            "Pilih:",
-            ["Tentang Website", "Tentang Penulis"],
-            index=0 if st.session_state.about_option == "Tentang Website" else 1,
-            key="about_radio"
-        )
-        st.session_state.about_option = about_option
+    # Inisialisasi state
+    if "about_option" not in st.session_state:
+        st.session_state.about_option = "Website"
 
-    with col_content:
-        if st.session_state.about_option == "Tentang Website":
-            st.markdown("""
-    
-            Website ini dibuat untuk mendeteksi wajah pada gambar secara otomatis menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia. 
-            Tujuannya adalah memudahkan pengguna mendeteksi wajah tanpa perlu menginstal software tambahan atau memahami pemrograman.
-    
-            **Fitur Utama:**
-            - Upload gambar dalam format JPG, JPEG, atau PNG.
-            - Deteksi wajah secara otomatis dengan bounding box.
-            - Hasil Before/After ditampilkan berdampingan untuk memudahkan perbandingan.
-            - Download hasil deteksi wajah dalam format PNG.
-            - UI Futuristik dengan animasi Neon Glow untuk pengalaman interaktif.
-    
-            **Cara Menggunakan:**
-            1. Pilih menu **Deteksi Wajah** di atas.
-            2. Upload gambar dari perangkat Anda menggunakan tombol upload.
-            3. Klik tombol **🚀 Detect Faces** untuk memulai deteksi.
-            4. Hasil deteksi muncul di kolom Before/After, dan dapat diunduh jika diinginkan.
+    # Tombol toggle horizontal
+    col1, col2 = st.columns(2, gap="small")
+    with col1:
+        if st.button("Tentang Website"):
+            st.session_state.about_option = "Website"
+    with col2:
+        if st.button("Tentang Penulis"):
+            st.session_state.about_option = "Penulis"
+
+    # CSS Neon Toggle Button
+    st.markdown(f"""
+    <style>
+    div.stButton > button:first-child {{
+        background: {'#00e0ff' if st.session_state.about_option=='Website' else '#151a28'};
+        color: {'#0b0f19' if st.session_state.about_option=='Website' else '#bcd4ff'};
+        font-weight: 700;
+        border-radius: 12px;
+        padding: 0.7em 2em;
+        transition: all 0.3s ease;
+    }}
+    div.stButton > button:last-child {{
+        background: {'#00e0ff' if st.session_state.about_option=='Penulis' else '#151a28'};
+        color: {'#0b0f19' if st.session_state.about_option=='Penulis' else '#bcd4ff'};
+        font-weight: 700;
+        border-radius: 12px;
+        padding: 0.7em 2em;
+        transition: all 0.3s ease;
+    }}
+    div.stButton > button:hover {{
+        box-shadow: 0 0 15px #00e0ff, 0 0 25px #7a00ff;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Konten About
+    if st.session_state.about_option == "Website":
+        st.markdown("""
+        Website ini dibuat untuk mendeteksi wajah pada gambar secara otomatis menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia. 
+        Tujuannya adalah memudahkan pengguna mendeteksi wajah tanpa perlu menginstal software tambahan atau memahami pemrograman.
+
+        **Fitur Utama:**
+        - Upload gambar dalam format JPG, JPEG, atau PNG.
+        - Deteksi wajah secara otomatis dengan bounding box.
+        - Hasil Before/After ditampilkan berdampingan.
+        - Download hasil deteksi wajah dalam format PNG.
+        - UI Futuristik dengan animasi Neon Glow.
+        """)
+    else:
+        col1_bio, col2_bio = st.columns([1,1])
+        with col1_bio:
+            st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
+        with col2_bio:
+            st.info("""
+            **Nama:** Heru Bagus Cahyo  
+            **Jurusan:** Statistika  
+            **Angkatan:** 2022  
+            **Email:** herubagusapk@gmail.com  
+            **Instagram:** @herubaguscahyo
             """)
-
-        else:
-            col1_bio, col2_bio = st.columns([1,1])
-            with col1_bio:
-                st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
-            with col2_bio:
-                st.info("""
-                **Nama:** Heru Bagus Cahyo  
-                **Jurusan:** Statistika  
-                **Angkatan:** 2022  
-                **Email:** herubagusapk@gmail.com  
-                **Instagram:** @herubaguscahyo
-                """)
 
 
 def show_detect(model):
