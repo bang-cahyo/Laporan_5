@@ -100,6 +100,22 @@ model = load_yolo_model()
 # ======================================
 # Session state untuk navigasi
 # ======================================
+st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
+st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
+st.markdown("<p class='subtext'>Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>", unsafe_allow_html=True)
+
+# Tombol navigasi
+col1, col2 = st.columns([1,1])
+with col1:
+    if st.button("About Me"):
+        st.session_state.page = "about"
+with col2:
+    if st.button("Deteksi Wajah"):
+        st.session_state.page = "detect"
+
+# ======================================
+# Session state untuk navigasi
+# ======================================
 if "page" not in st.session_state:
     st.session_state.page = "home"  # default halaman
 
