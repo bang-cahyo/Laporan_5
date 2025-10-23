@@ -191,7 +191,7 @@ with st.sidebar:
 
     if menu == "🏠 Home":
         st.session_state.page = "home"
-    elif menu == "🧍 About Me":
+    elif menu == "🧍 About":
         st.session_state.page = "about"
     elif menu == "📷 Deteksi Wajah":
         st.session_state.page = "detect"
