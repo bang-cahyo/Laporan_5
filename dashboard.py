@@ -110,7 +110,7 @@ with col2:
 # ======================================
 # About Me & About Website
 # ======================================
-if page == "About Me":
+if show_about:
     st.markdown("<h1>About</h1>", unsafe_allow_html=True)
 
     # Tombol navigasi vertikal untuk sub-about
@@ -131,6 +131,7 @@ if page == "About Me":
                 **Email:** herubagusapk@gmail.com  
                 **Instagram:** @herubaguscahyo  
                 """)
+    
         elif about_option == "Tentang Website":
             st.markdown("""
             **Tentang Website YOLO Face Detection**  
