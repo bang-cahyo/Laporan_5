@@ -379,8 +379,56 @@ if st.session_state.page == "about":
     show_about()
 elif st.session_state.page == "detect":
     show_detect(model)
+# ======================================
+# Halaman Home Futuristik
+# ======================================
 else:
-    st.write("Selamat datang di YOLO Face Detection Dashboard!")
+    # Judul utama
+    st.markdown("<h1 class='neon-title' style='text-align:center;'>🤖 YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#bcd4ff; font-size:1.2rem;'>Deteksi ekspresi wajah secara real-time menggunakan teknologi YOLOv8 dan antarmuka futuristik.</p>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    # 3 fitur utama dalam card
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("""
+        <div class='result-card' style='text-align:center;'>
+            <h3>📷 Deteksi Wajah</h3>
+            <p class='subtext'>Unggah gambar atau gunakan kamera Anda, sistem otomatis akan mengenali wajah secara instan.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown("""
+        <div class='result-card' style='text-align:center;'>
+            <h3>💾 Simpan Hasil</h3>
+            <p class='subtext'>Unduh hasil deteksi wajah Anda dalam format PNG dengan kualitas tinggi.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col3:
+        st.markdown("""
+        <div class='result-card' style='text-align:center;'>
+            <h3>🎨 Antarmuka Neon</h3>
+            <p class='subtext'>Desain modern dengan efek glowing untuk pengalaman visual yang futuristik dan interaktif.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # Tombol navigasi ke halaman deteksi
+    st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
+    if st.button("🚀 Mulai Deteksi Sekarang"):
+        st.session_state.page = "detect"
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Bagian profil kecil di bawah
+    st.markdown("""
+    <div style='margin-top:60px; text-align:center;'>
+        <p class='subtext'>Dikembangkan oleh <span class='neon-name'>Heru Bagus Cahyo</span> — Mahasiswa Statistika Universitas Syiah Kuala.</p>
+        <p style='font-style:italic; color:#7a9fff;'>“Teknologi terbaik adalah yang bisa mempermudah manusia memahami dirinya sendiri.”</p>
+    </div>
+    """, unsafe_allow_html=True)
+
 
 # ======================================
 # Footer dengan About
