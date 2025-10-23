@@ -195,6 +195,7 @@ with st.sidebar:
         st.session_state.page = "about"
     elif menu == "📷 Deteksi Wajah":
         st.session_state.page = "detect"
+        
 # ======================================
 # Halaman Home 
 # ======================================
@@ -210,17 +211,14 @@ def show_home():
     )
     st.markdown("---")
 
-    # Background / Ilustrasi Visual
-    st.image("hero_image.jpg", caption="Welcome to the Futuristic Dashboard", use_column_width=True)
+    # Caption di atas gambar
+    st.markdown(
+        "<h3 style='text-align:center; color:#00e0ff;'>Welcome to the Futuristic Dashboard</h3>",
+        unsafe_allow_html=True
+    )
 
-    # Highlight Fitur Utama dalam Neon Card
-    col1, col2, col3 = st.columns(3, gap="medium")
-    with col1:
-        st.markdown("<div class='result-card' style='text-align:center;'>📷 Upload / Kamera</div>", unsafe_allow_html=True)
-    with col2:
-        st.markdown("<div class='result-card' style='text-align:center;'>✅ Deteksi Otomatis</div>", unsafe_allow_html=True)
-    with col3:
-        st.markdown("<div class='result-card' style='text-align:center;'>💾 Download Hasil</div>", unsafe_allow_html=True)
+    # Background / Ilustrasi Visual
+    st.image("hero_image.jpg", use_container_width=True)
 
     # Tagline atau Quote Interaktif
     st.markdown(
@@ -235,7 +233,6 @@ def show_home():
         "Dikembangkan oleh <b>Heru Bagus Cahyo</b></p>",
         unsafe_allow_html=True
     )
-
 
 # ======================================
 # Halaman About
