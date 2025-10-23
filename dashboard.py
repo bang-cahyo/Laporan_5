@@ -44,13 +44,8 @@ h1 {
 }
 
 /* Neon Typing Animation */
-@keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
-}
-@keyframes blink {
-  50% { border-color: transparent }
-}
+@keyframes typing { from { width: 0 } to { width: 100% } }
+@keyframes blink { 50% { border-color: transparent } }
 .neon-name {
   font-size: 1.2rem;
   color: #00e0ff;
@@ -61,15 +56,6 @@ h1 {
   width: 0;
   animation: typing 2s steps(22) forwards, blink 0.75s step-end infinite;
   margin-bottom: 15px;
-}
-
-/* Credit name (static) */
-.credit {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #00e0ff;
-    text-shadow: 0 0 8px rgba(0, 224, 255, 0.6);
-    margin-bottom: 15px;
 }
 
 /* Tombol */
@@ -150,18 +136,16 @@ def load_yolo_model():
 model = load_yolo_model()
 
 # ======================================
-# Bagian UI — Tampilan Utama
-# ======================================
-# ======================================
 # Sidebar Navigation
 # ======================================
 page = st.sidebar.radio("Menu", ["Deteksi Wajah", "About Me"])
 
+# ======================================
+# Halaman About Me
+# ======================================
 if page == "About Me":
-    # Layout 2 kolom untuk foto dan biodata
     col1_bio, col2_bio = st.columns([1,1])
     with col1_bio:
-        # Gunakan URL foto agar aman di Streamlit Cloud
         st.image("https://i.ibb.co/2c8v4P7/foto-saya.jpg", caption="Heru Bagus Cahyo", width=200)
     with col2_bio:
         st.info("""
@@ -172,6 +156,9 @@ if page == "About Me":
         **Instagram:** @herubaguscahyo  
         """)
 
+# ======================================
+# Halaman Deteksi Wajah
+# ======================================
 elif page == "Deteksi Wajah":
     st.markdown("<h1>YOLO Face Detection Dashboard</h1>", unsafe_allow_html=True)
     st.markdown("<div class='neon-name'>👨‍💻 Heru Bagus Cahyo</div>", unsafe_allow_html=True)
@@ -216,50 +203,6 @@ elif page == "Deteksi Wajah":
         st.markdown("</div>", unsafe_allow_html=True)
     elif not uploaded_file:
         st.info("📁 Please upload an image to begin detection.")
-
-with col2:
-    st.empty()
-
-# ======================================
-# Deteksi Wajah
-# ======================================
-if detect_button and uploaded_file:
-    img = Image.open(uploaded_file).convert("RGB")
-    img_np = np.array(img)
-
-    with st.spinner("Detecting faces... 🔍"):
-        start_time = time.time()
-        results = model(img_np)
-        inference_time = time.time() - start_time
-
-    result_img = results[0].plot()
-    boxes = results[0].boxes.xyxy
-
-    st.markdown("<div class='result-card'>", unsafe_allow_html=True)
-    st.image(result_img, caption="Detection Result", use_container_width=True)
-    st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-
-    st.download_button(
-        label="💾 Download Detection Result",
-        data=get_downloadable_image(result_img),
-        file_name="hasil_deteksi_wajah.png",
-        mime="image/png"
-    )
-
-    if len(boxes) > 0:
-        st.markdown("### Detected Faces")
-        face_cols = st.columns(min(4, len(boxes)))
-        for i, box in enumerate(boxes):
-            x1, y1, x2, y2 = map(int, box[:4])
-            face_crop = img_np[y1:y2, x1:x2]
-            face_img = Image.fromarray(face_crop)
-            face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
-    else:
-        st.warning("⚠️ No faces detected in this image.")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-elif not uploaded_file:
-    st.info("📁 Please upload an image to begin detection.")
 
 # ======================================
 # Footer — Credit Pembuat
