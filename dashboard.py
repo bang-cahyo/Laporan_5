@@ -10,7 +10,6 @@ import os
 import cv2
 from utils import letterbox_image, get_downloadable_image
 from io import BytesIO
-from google.cloud import storage
 
 # Konfigurasi Halaman
 st.set_page_config(
@@ -353,11 +352,6 @@ def show_detect(model):
         uploaded_file = st.file_uploader("📁 Upload Gambar", type=["jpg", "jpeg", "png"])
         if uploaded_file is not None:
             image = Image.open(uploaded_file).convert("RGB")
-            file_bytes = uploaded_file.read()
-            blob = bucket.blob(f"user_uploads/{uploaded_file.name}")
-            blob.upload_from_string(file_bytes, content_type=uploaded_file.type)
-            st.success(f"✅ File berhasil diupload ke Cloud: {blob.public_url}")
-
             with st.spinner("🔍 Mendeteksi wajah..."):
                 results = model(image, conf=0.25)
                 result_image = Image.fromarray(results[0].plot()[..., ::-1])
@@ -389,10 +383,6 @@ def show_detect(model):
 
         with col2:
             if camera_input is not None:
-                file_bytes = camera_input.read()
-                blob = bucket.blob(f"user_uploads/camera_{int(time.time())}.png")
-                blob.upload_from_string(file_bytes, content_type="image/png")
-                st.success(f"✅ Foto kamera berhasil diupload ke Cloud: {blob.public_url}")
                 image = Image.open(camera_input).convert("RGB")
                 image = ImageOps.exif_transpose(image)
                 original_size = image.size
