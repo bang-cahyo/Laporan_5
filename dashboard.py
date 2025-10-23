@@ -9,7 +9,7 @@ import io
 import time
 import os
 import cv2
-
+from utils import letterbox_image, get_downloadable_image
 # ======================================
 # Konfigurasi Halaman
 # ======================================
@@ -230,7 +230,6 @@ def show_about():
 # ======================================
 # Halaman Deteksi Wajah
 # ======================================
-from utils import letterbox_image, get_downloadable_image
 
 def show_detect(model):
     st.markdown('<h2 class="neon-title">YOLO Face Detection</h2>', unsafe_allow_html=True)
