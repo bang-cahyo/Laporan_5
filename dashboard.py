@@ -143,17 +143,28 @@ with col2:
 # Halaman About
 # ======================================
 if st.session_state.page == "about":
-    st.markdown("<h2>About</h2>", unsafe_allow_html=True)
+    st.markdown("<h1>About</h1>", unsafe_allow_html=True)
+
     col_nav, col_content = st.columns([1,3])
     with col_nav:
-        about_option = st.radio("Pilih:", ["Tentang Website", "Tentang Penulis"], index=0)
+        # Inisialisasi session_state jika belum ada
+        if "about_option" not in st.session_state:
+            st.session_state.about_option = "Tentang Website"  # default halaman website
+        # Radio button untuk sub-about
+        about_selection = st.radio(
+            "Pilih:", 
+            ["Tentang Website", "Tentang Penulis"], 
+            index=0 if st.session_state.about_option == "Tentang Website" else 1
+        )
+        st.session_state.about_option = about_selection  # update state
+
     with col_content:
-        if about_option == "Tentang Website":
+        if st.session_state.about_option == "Tentang Website":
             st.markdown("""
             **Tentang Website YOLO Face Detection**  
 
-            Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8** yang telah dilatih khusus untuk wajah manusia.  
-            Tujuan website adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat, tanpa perlu menginstal software tambahan atau memahami pemrograman.  
+            Website ini dibuat untuk mendeteksi wajah pada gambar menggunakan model **YOLOv8** yang sudah dilatih khusus untuk wajah manusia.  
+            Tujuan website ini adalah memudahkan pengguna mendeteksi wajah secara cepat dan akurat, tanpa perlu menginstal software tambahan atau memahami pemrograman.  
 
             **Fitur Utama:**  
             - Upload gambar format JPG, JPEG, atau PNG  
@@ -171,7 +182,6 @@ if st.session_state.page == "about":
             Website ini dibuat oleh **Heru Bagus Cahyo** menggunakan **Streamlit** dan **Ultralytics YOLOv8**, sehingga dapat berjalan di browser tanpa instalasi tambahan.
             """)
         else:
-            # Tentang Penulis
             col1_bio, col2_bio = st.columns([1,1])
             with col1_bio:
                 st.image("foto_saya.jpg", caption="Heru Bagus Cahyo", width=200)
