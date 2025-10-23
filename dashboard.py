@@ -172,20 +172,23 @@ elif page == "Deteksi Wajah":
     detect_button = st.button("🚀 Detect Faces")
 
     if detect_button and uploaded_file:
-        if uploaded_file.size > 20*1024*1024:  # 20 MB
-            st.warning("⚠️ File terlalu besar, maksimal 20 MB")
-        else:
-            img = Image.open(uploaded_file).convert("RGB")
-            # resize sebelum deteksi
-            img.thumbnail((640, 640))
-            img_np = np.array(img)
-            with st.spinner("Detecting faces... 🔍"):
-                start_time = time.time()
-                results = model(img_np, conf=0.2)
-                inference_time = time.time() - start_time
+    # Buka gambar
+    img = Image.open(uploaded_file).convert("RGB")
 
-        result_img = results[0].plot()
-        boxes = results[0].boxes.xyxy
+    # Resize otomatis
+    max_size = 640
+    img.thumbnail((max_size, max_size))
+    img_np = np.array(img)
+
+    with st.spinner("Detecting faces... 🔍"):
+        start_time = time.time()
+        results = model(img_np, conf=0.15, iou=0.3)
+        inference_time = time.time() - start_time
+
+    # Plot hasil
+    result_img = results[0].plot()
+    boxes = results[0].boxes.xyxy
+
 
         st.markdown("<div class='result-card'>", unsafe_allow_html=True)
         st.image(result_img, caption="Detection Result", use_container_width=True)
