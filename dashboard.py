@@ -282,73 +282,73 @@ def show_detect(model):
                 mime="image/png"
             )
 
-# ==========================
-# Gunakan Kamera
-# ==========================
-elif pilih_input == "Gunakan Kamera":
-    st.info("📸 Gunakan kamera untuk capture gambar, hasil deteksi muncul di kanan.")
-
-    # Buat dua kolom: kiri kamera, kanan hasil deteksi
-    col_cam, col_after = st.columns(2)
-
-    with col_cam:
-        cam_image = st.camera_input("")  # kamera di kolom kiri
-
-    if cam_image:
-        img = Image.open(cam_image).convert("RGB")
-        img_np = np.array(img)
-        img_np_resized = letterbox_image(img_np, target_size=(640,640))
-
-        # Deteksi YOLO
-        with st.spinner("Detecting faces... 🔍"):
-            start_time = time.time()
-            results = model(img_np_resized, conf=0.15, iou=0.3)
-            inference_time = time.time() - start_time
-
-        # Hasil After Detection
-        result_img_resized = results[0].plot()
-        h, w = img_np.shape[:2]
-        result_img_resized = cv2.resize(result_img_resized, (w, h))
-
-        with col_after:
-            st.markdown("<br>", unsafe_allow_html=True)  # spasi
-            st.image(result_img_resized, caption="After Detection", use_container_width=True)
-            st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-
-            # ==========================
-            # Statistik Ekspresi Wajah
-            # ==========================
-            if results[0].boxes is not None:
-                boxes = results[0].boxes.xyxy
-                if len(boxes) > 0:
-                    from fer import FER
-                    detector = FER(mtcnn=True)
-                    expressions_set = set()
-
-                    for box in boxes:
-                        x1, y1, x2, y2 = map(int, box[:4])
-                        face_crop = img_np[y1:y2, x1:x2]
-                        detected = detector.detect_emotions(face_crop)
-                        if detected:
-                            # ambil ekspresi dengan confidence tertinggi
-                            label = max(detected[0]["emotions"], key=detected[0]["emotions"].get)
-                            expressions_set.add(label)
-                        else:
-                            expressions_set.add("Unknown")
-
-                    st.markdown("### Ekspresi Terdeteksi:")
-                    st.write(", ".join(expressions_set))
-                else:
-                    st.warning("⚠️ Tidak ada wajah yang terdeteksi.")
-
-
-                # Tombol Download
-                st.download_button(
-                    label="💾 Download Detection Result",
-                    data=get_downloadable_image(result_img_resized),
-                    file_name="hasil_deteksi_kamera.png",
-                    mime="image/png"
-                )
+    # ==========================
+    # Gunakan Kamera
+    # ==========================
+    elif pilih_input == "Gunakan Kamera":
+        st.info("📸 Gunakan kamera untuk capture gambar, hasil deteksi muncul di kanan.")
+    
+        # Buat dua kolom: kiri kamera, kanan hasil deteksi
+        col_cam, col_after = st.columns(2)
+    
+        with col_cam:
+            cam_image = st.camera_input("")  # kamera di kolom kiri
+    
+        if cam_image:
+            img = Image.open(cam_image).convert("RGB")
+            img_np = np.array(img)
+            img_np_resized = letterbox_image(img_np, target_size=(640,640))
+    
+            # Deteksi YOLO
+            with st.spinner("Detecting faces... 🔍"):
+                start_time = time.time()
+                results = model(img_np_resized, conf=0.15, iou=0.3)
+                inference_time = time.time() - start_time
+    
+            # Hasil After Detection
+            result_img_resized = results[0].plot()
+            h, w = img_np.shape[:2]
+            result_img_resized = cv2.resize(result_img_resized, (w, h))
+    
+            with col_after:
+                st.markdown("<br>", unsafe_allow_html=True)  # spasi
+                st.image(result_img_resized, caption="After Detection", use_container_width=True)
+                st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
+    
+                # ==========================
+                # Statistik Ekspresi Wajah
+                # ==========================
+                if results[0].boxes is not None:
+                    boxes = results[0].boxes.xyxy
+                    if len(boxes) > 0:
+                        from fer import FER
+                        detector = FER(mtcnn=True)
+                        expressions_set = set()
+    
+                        for box in boxes:
+                            x1, y1, x2, y2 = map(int, box[:4])
+                            face_crop = img_np[y1:y2, x1:x2]
+                            detected = detector.detect_emotions(face_crop)
+                            if detected:
+                                # ambil ekspresi dengan confidence tertinggi
+                                label = max(detected[0]["emotions"], key=detected[0]["emotions"].get)
+                                expressions_set.add(label)
+                            else:
+                                expressions_set.add("Unknown")
+    
+                        st.markdown("### Ekspresi Terdeteksi:")
+                        st.write(", ".join(expressions_set))
+                    else:
+                        st.warning("⚠️ Tidak ada wajah yang terdeteksi.")
+    
+    
+                    # Tombol Download
+                    st.download_button(
+                        label="💾 Download Detection Result",
+                        data=get_downloadable_image(result_img_resized),
+                        file_name="hasil_deteksi_kamera.png",
+                        mime="image/png"
+                    )
 
 
 
