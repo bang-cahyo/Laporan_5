@@ -292,44 +292,44 @@ def show_detect(model):
                 st.warning("⚠️ No faces detected in this image.")
 
     elif pilih_input == "Gunakan Kamera":
-        st.info("📸 Klik 'Ambil Foto' untuk capture gambar dari kamera perangkat.")
-        cam_image = st.camera_input("Ambil Foto")
-
+        # Kamera input tanpa label tambahan
+        cam_image = st.camera_input(label="")
+    
         if cam_image:
+            # Convert image
             img = Image.open(cam_image).convert("RGB")
             img_np = np.array(img)
+            h_input, w_input = img_np.shape[:2]
+    
+            # Resize untuk YOLO
             img_np_resized = letterbox_image(img_np, target_size=(640,640))
-
+    
+            # Deteksi wajah
             with st.spinner("Detecting faces... 🔍"):
                 start_time = time.time()
                 results = model(img_np_resized, conf=0.15, iou=0.3)
                 inference_time = time.time() - start_time
-
+    
             result_img = results[0].plot()
-            boxes = results[0].boxes.xyxy
-
-            st.image(result_img, caption="Hasil Deteksi Kamera", use_column_width=True)
+            # Resize hasil deteksi supaya mengikuti rasio asli kamera
+            result_img_resized = cv2.resize(result_img, (w_input, h_input))
+    
+            # Tampilkan sejajar: kiri kamera, kanan hasil deteksi
+            col_before, col_after = st.columns(2)
+            with col_before:
+                st.image(img_np, caption="Before Detection", use_container_width=True)
+            with col_after:
+                st.image(result_img_resized, caption="After Detection", use_container_width=True)
+    
+            # Info dan tombol download
             st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-
-            # Tombol Download
             st.download_button(
                 label="💾 Download Detection Result",
-                data=get_downloadable_image(result_img),
+                data=get_downloadable_image(result_img_resized),
                 file_name="hasil_deteksi_kamera.png",
                 mime="image/png"
             )
 
-            # Tampilkan Crop Wajah Detected
-            if len(boxes) > 0:
-                st.markdown("### Detected Faces")
-                face_cols = st.columns(min(4, len(boxes)))
-                for i, box in enumerate(boxes):
-                    x1, y1, x2, y2 = map(int, box[:4])
-                    face_crop = img_np[y1:y2, x1:x2]
-                    face_img = Image.fromarray(face_crop)
-                    face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
-            else:
-                st.warning("⚠️ No faces detected in this image.")
 
 
 # Render halaman sesuai pilihan
