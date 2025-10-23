@@ -343,11 +343,10 @@ def show_detect(model):
     # ======================================
     # 📷 MODE KAMERA
     # ======================================
-    elif pilih_input == "📷 Gunakan Kamera":
-        camera_photo = st.camera_input("Ambil Foto")
-
-        if camera_photo is not None:
-            image = Image.open(camera_photo)
+    else:
+        camera_input = st.camera_input("📸 Ambil Foto Menggunakan Kamera")
+        if camera_input is not None:
+            image = Image.open(camera_input)
             if image.mode != "RGB":
                 image = image.convert("RGB")
 
@@ -356,27 +355,19 @@ def show_detect(model):
                 result_image = results[0].plot()
                 result_image = Image.fromarray(result_image[..., ::-1])
 
-            col1, col2 = st.columns(2)
-            with col1:
-                st.image(image, caption="📷 Gambar Kamera", use_container_width=True)
-            with col2:
-                st.image(result_image, caption="✅ Hasil Deteksi", use_container_width=True)
+            # Tampilkan hasil deteksi langsung (tanpa before)
+            st.image(result_image, caption="✅ Hasil Deteksi dari Kamera", use_container_width=True)
 
+            # Jumlah wajah terdeteksi
             num_faces = len(results[0].boxes)
             st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
 
+            # Ekstraksi ekspresi
             if results[0].boxes is not None and len(results[0].boxes) > 0:
-                detected_expressions = [
-                    results[0].names[int(cls)] for cls in results[0].boxes.cls
-                ]
+                detected_expressions = [results[0].names[int(cls)] for cls in results[0].boxes.cls]
                 unique_expressions = sorted(set(detected_expressions))
                 st.markdown(
-                    f"""
-                    <div style='background-color:#0f172a; padding:12px; border-radius:10px;
-                    border:1px solid #00e0ff; color:#00e0ff; text-align:center;'>
-                    😃 <b>Ekspresi Terdeteksi:</b> {', '.join(unique_expressions)}
-                    </div>
-                    """,
+                    f"<div class='info-box'>😃 Ekspresi Terdeteksi: {', '.join(unique_expressions)}</div>",
                     unsafe_allow_html=True
                 )
             else:
