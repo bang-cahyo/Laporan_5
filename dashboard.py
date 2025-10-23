@@ -333,11 +333,32 @@ st.markdown("""
 # Judul Dinamis Berdasarkan Halaman
 # ======================================
 if st.session_state.page == "home":
-    st.markdown('<h1 class="neon-title">Welcome to YOLO Face Detection</h1>', unsafe_allow_html=True)
+    st.markdown(
+        '<h1 class="neon-title">Welcome to YOLO Face Detection</h1>', 
+        unsafe_allow_html=True
+    )
+    st.markdown(
+        '<p class="subtext">Detect faces instantly with YOLO AI — Fast, Accurate, and Powerful.</p>',
+        unsafe_allow_html=True
+    )
 elif st.session_state.page == "about":
-    st.markdown('<h1 class="neon-title">About This App</h1>', unsafe_allow_html=True)
+    st.markdown(
+        '<h1 class="neon-title">About This App</h1>', 
+        unsafe_allow_html=True
+    )
+    st.markdown(
+        '<p class="subtext">Learn more about this web application and its creator.</p>',
+        unsafe_allow_html=True
+    )
 elif st.session_state.page == "detect":
-    st.markdown('<h1 class="neon-title">Face Detection Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown(
+        '<h1 class="neon-title">Face Detection Dashboard</h1>', 
+        unsafe_allow_html=True
+    )
+    st.markdown(
+        '<p class="subtext">Upload an image and detect faces with state-of-the-art YOLOv8 model.</p>',
+        unsafe_allow_html=True
+    )
 
 # ======================================
 # Animasi Glow pada Cards
