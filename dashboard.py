@@ -267,52 +267,34 @@ def show_detect(model):
     st.markdown('<h2 class="neon-title">YOLO Face Detection</h2>', unsafe_allow_html=True)
     pilih_input = st.radio("Pilih Sumber Input:", ["🖼️ Upload Gambar", "📷 Gunakan Kamera"])
 
-    # ==============================
-    # Upload Gambar
-    # ==============================
-    if pilih_input == "🖼️ Upload Gambar":
-        uploaded_file = st.file_uploader("Upload gambar wajah Anda", type=["jpg", "jpeg", "png"])
-        detect_button = st.button("🚀 Deteksi Ekspresi")
+# ======================================
+# UPLOAD GAMBAR
+# ======================================
+uploaded_file = st.file_uploader("📁 Upload Gambar", type=["jpg", "jpeg", "png"])
 
-        if detect_button and uploaded_file:
-            if uploaded_file.size > 20 * 1024 * 1024:
-                st.warning("⚠️ File terlalu besar, maksimal 20 MB")
-                return
+if uploaded_file is not None:
+    # Konversi file ke image PIL
+    image = Image.open(uploaded_file)
 
-            # Baca gambar dan pra-proses
-            img = Image.open(uploaded_file).convert("RGB")
-            img_np = np.array(img)
-            img_np_resized = letterbox_image(img_np, target_size=(640, 640))
+    # Pastikan format RGB
+    if image.mode != "RGB":
+        image = image.convert("RGB")
 
-            # Jalankan deteksi otomatis
-            with st.spinner("Mendeteksi ekspresi wajah... 🔍"):
-                start_time = time.time()
-                results = model(img_np_resized, conf=0.25, iou=0.3)
-                inference_time = time.time() - start_time
+    # Tampilkan gambar original
+    st.image(image, caption="Gambar Asli", use_container_width=False)
 
-            # Gambar hasil deteksi
-            result_img_resized = results[0].plot()
+    # Deteksi wajah otomatis
+    with st.spinner("🔍 Mendeteksi wajah..."):
+        results = model(image, conf=0.25)  # turunkan threshold agar lebih sensitif
+        result_image = results[0].plot()  # hasil berupa array BGR
+        result_image = Image.fromarray(result_image[..., ::-1])  # ubah ke RGB
 
-            # Tampilkan hasil
-            st.markdown("<div class='result-card'>", unsafe_allow_html=True)
-            col_before, col_after = st.columns(2)
-            with col_before:
-                st.image(img_np, caption="Before Detection", use_container_width=True)
-            with col_after:
-                st.image(result_img_resized, caption="After Detection", use_container_width=True)
-            
-            st.markdown(f"<div class='info-box'>🕒 Waktu Inference: {inference_time:.2f} detik</div>", unsafe_allow_html=True)
+    # Tampilkan hasil deteksi
+    st.image(result_image, caption="Hasil Deteksi", use_container_width=False)
 
-            # Ekspresi yang terdeteksi
-            if results[0].boxes is not None and len(results[0].boxes) > 0:
-                detected_expressions = [results[0].names[int(cls)] for cls in results[0].boxes.cls]
-                unique_expressions = sorted(set(detected_expressions))
-                st.markdown(
-                    f"<div class='info-box'>😃 Ekspresi Terdeteksi: {', '.join(unique_expressions)}</div>", 
-                    unsafe_allow_html=True
-                )
-            else:
-                st.warning("😕 Tidak ada ekspresi wajah terdeteksi pada gambar ini.")
+    # Tambahkan informasi jumlah deteksi
+    num_faces = len(results[0].boxes)
+    st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
 
             # Tombol download hasil
             st.download_button(
