@@ -313,63 +313,58 @@ def show_detect(model):
     # 📷 MODE KAMERA — Before & After KANAN-KIRI
     # ======================================
     else:
-        camera_input = st.camera_input("📸 Ambil Foto Menggunakan Kamera")
+        col1, col2 = st.columns(2)
 
-        if camera_input is not None:
-            image = Image.open(camera_input).convert("RGB")
+        with col1:
+            st.markdown("<h4 style='text-align:center;'>📸 Kamera</h4>", unsafe_allow_html=True)
+            camera_input = st.camera_input("Ambil Foto Menggunakan Kamera")
 
-            # ✅ Perbaiki orientasi & ukuran agar YOLO lebih akurat
-            image = PIL.ImageOps.exif_transpose(image)
-            image = image.resize((640, 640))
+        with col2:
+            if camera_input is not None:
+                image = Image.open(camera_input).convert("RGB")
+                image = PIL.ImageOps.exif_transpose(image)
+                image = image.resize((640, 640))
 
-            with st.spinner("🔍 Mendeteksi wajah..."):
-                results = model(image, conf=0.25)
-                result_image = results[0].plot()
-                result_image = Image.fromarray(result_image[..., ::-1])
+                with st.spinner("🔍 Mendeteksi wajah..."):
+                    results = model(image, conf=0.25)
+                    result_image = results[0].plot()
+                    result_image = Image.fromarray(result_image[..., ::-1])
 
-            # Tampilkan hasil berdampingan (kanan-kiri)
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("<h4 style='text-align:center;'>📸 Kamera</h4>", unsafe_allow_html=True)
-                st.image(image, use_container_width=True)
-            with col2:
-                st.markdown("<h4 style='text-align:center;'>✅ Deteksi</h4>", unsafe_allow_html=True)
+                st.markdown("<h4 style='text-align:center;'>✅ Hasil Deteksi</h4>", unsafe_allow_html=True)
                 st.image(result_image, use_container_width=True)
 
-            # ==========================
-            # Informasi Deteksi
-            # ==========================
-            num_faces = len(results[0].boxes)
-            if num_faces > 0:
-                st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
-            else:
-                st.warning("😕 Tidak ada wajah terdeteksi.")
+                # Jumlah wajah
+                num_faces = len(results[0].boxes)
+                if num_faces > 0:
+                    st.success(f"✅ Jumlah wajah terdeteksi: {num_faces}")
+                else:
+                    st.warning("😕 Tidak ada wajah terdeteksi.")
 
-            # Ekspresi wajah (jika model punya label)
-            if hasattr(results[0], "names") and results[0].boxes is not None and len(results[0].boxes) > 0:
-                detected_expressions = [results[0].names[int(cls)] for cls in results[0].boxes.cls]
-                unique_expressions = sorted(set(detected_expressions))
-                st.markdown(
-                    f"<div style='background-color:#001830; border-radius:10px; padding:10px; text-align:center; color:#00e0ff;'>"
-                    f"😃 <b>Ekspresi Terdeteksi:</b> {', '.join(unique_expressions)}</div>",
-                    unsafe_allow_html=True
+                # Deteksi ekspresi
+                if hasattr(results[0], "names") and results[0].boxes is not None and len(results[0].boxes) > 0:
+                    detected_expressions = [results[0].names[int(cls)] for cls in results[0].boxes.cls]
+                    unique_expressions = sorted(set(detected_expressions))
+                    st.markdown(
+                        f"<div style='background-color:#001830; border-radius:10px; padding:10px; text-align:center; color:#00e0ff;'>"
+                        f"😃 <b>Ekspresi Terdeteksi:</b> {', '.join(unique_expressions)}</div>",
+                        unsafe_allow_html=True
+                    )
+
+                # Tombol download hasil
+                def get_downloadable_image(img):
+                    buf = BytesIO()
+                    img.save(buf, format="PNG")
+                    return buf.getvalue()
+
+                result_img_resized = result_image.resize(image.size)
+                st.download_button(
+                    label="💾 Download Hasil Deteksi",
+                    data=get_downloadable_image(result_img_resized),
+                    file_name="hasil_deteksi_wajah.png",
+                    mime="image/png"
                 )
-
-            # ==========================
-            # Tombol download hasil
-            # ==========================
-            def get_downloadable_image(img):
-                buf = BytesIO()
-                img.save(buf, format="PNG")
-                return buf.getvalue()
-
-            result_img_resized = result_image.resize(image.size)
-            st.download_button(
-                label="💾 Download Hasil Deteksi",
-                data=get_downloadable_image(result_img_resized),
-                file_name="hasil_deteksi_wajah.png",
-                mime="image/png"
-            )
+            else:
+                st.info("👈 Ambil gambar terlebih dahulu dari kamera di kiri untuk melihat hasil deteksi di sini.")
 
 
 # ======================================
