@@ -381,11 +381,14 @@ def show_detect(model):
                 else:
                     st.warning("😕 Tidak ada ekspresi wajah terdeteksi.")
 
-                # Tombol download hasil
+               
+                # Samakan ukuran hasil deteksi dengan gambar asli
+                result_img_resized = result_image.resize(image.size)
+                
                 st.download_button(
                     label="💾 Download Hasil Deteksi",
                     data=get_downloadable_image(result_img_resized),
-                    file_name="hasil_deteksi_kamera.png",
+                    file_name="hasil_deteksi_wajah.png",
                     mime="image/png"
                 )
 
