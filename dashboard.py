@@ -235,7 +235,7 @@ def show_detect(model):
     st.markdown('<h2 class="neon-title">YOLO Face Detection</h2>', unsafe_allow_html=True)
 
     # Pilih sumber input
-    pilih_input = st.radio("Pilih Sumber Input:", ["Upload Gambar", "Gunakan Kamera"])
+    pilih_input = st.radio("Pilih Sumber Input:", ["Upload Gambar", "Gunakan Kamera", "Realtime Kamera"])
 
     if pilih_input == "Upload Gambar":
         uploaded_file = st.file_uploader("Upload an image", type=["jpg","jpeg","png"])
@@ -253,7 +253,6 @@ def show_detect(model):
             img_np_eq = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2RGB)
             img_np_resized = letterbox_image(img_np_eq, target_size=(640,640))
 
-            # Deteksi YOLO
             with st.spinner("Detecting faces... 🔍"):
                 start_time = time.time()
                 results = model(img_np_resized, conf=0.15, iou=0.3)
@@ -262,7 +261,7 @@ def show_detect(model):
             result_img = results[0].plot()
             boxes = results[0].boxes.xyxy
 
-            # Tampilkan Before / After
+            # Before / After
             st.markdown("<div class='result-card'>", unsafe_allow_html=True)
             col_before, col_after = st.columns(2)
             with col_before:
@@ -271,7 +270,7 @@ def show_detect(model):
                 st.image(result_img, caption="After Detection", use_column_width=True)
             st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
 
-            # Tombol Download
+            # Download
             st.download_button(
                 label="💾 Download Detection Result",
                 data=get_downloadable_image(result_img),
@@ -279,22 +278,9 @@ def show_detect(model):
                 mime="image/png"
             )
 
-            # Tampilkan Crop Wajah Detected
-            if len(boxes) > 0:
-                st.markdown("### Detected Faces")
-                face_cols = st.columns(min(4, len(boxes)))
-                for i, box in enumerate(boxes):
-                    x1, y1, x2, y2 = map(int, box[:4])
-                    face_crop = img_np[y1:y2, x1:x2]
-                    face_img = Image.fromarray(face_crop)
-                    face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
-            else:
-                st.warning("⚠️ No faces detected in this image.")
-
     elif pilih_input == "Gunakan Kamera":
         st.info("📸 Klik 'Ambil Foto' untuk capture gambar dari kamera perangkat.")
         cam_image = st.camera_input("Ambil Foto")
-
         if cam_image:
             img = Image.open(cam_image).convert("RGB")
             img_np = np.array(img)
@@ -310,8 +296,6 @@ def show_detect(model):
 
             st.image(result_img, caption="Hasil Deteksi Kamera", use_column_width=True)
             st.markdown(f"<div class='info-box'>🕒 Inference Time: {inference_time:.2f} seconds</div>", unsafe_allow_html=True)
-
-            # Tombol Download
             st.download_button(
                 label="💾 Download Detection Result",
                 data=get_downloadable_image(result_img),
@@ -319,17 +303,45 @@ def show_detect(model):
                 mime="image/png"
             )
 
-            # Tampilkan Crop Wajah Detected
-            if len(boxes) > 0:
-                st.markdown("### Detected Faces")
-                face_cols = st.columns(min(4, len(boxes)))
-                for i, box in enumerate(boxes):
-                    x1, y1, x2, y2 = map(int, box[:4])
-                    face_crop = img_np[y1:y2, x1:x2]
-                    face_img = Image.fromarray(face_crop)
-                    face_cols[i % len(face_cols)].image(face_img, caption=f"Face {i+1}", width=160)
-            else:
-                st.warning("⚠️ No faces detected in this image.")
+    elif pilih_input == "Realtime Kamera":
+        st.info("📹 Real-time Kamera (Streaming)")
+        frame_placeholder = st.empty()
+        start_button = st.button("▶️ Start Realtime")
+        stop_button = st.button("⏹ Stop Realtime")
+
+        if "realtime" not in st.session_state:
+            st.session_state.realtime = False
+
+        if start_button:
+            st.session_state.realtime = True
+        if stop_button:
+            st.session_state.realtime = False
+
+        if st.session_state.realtime:
+            try:
+                cap = cv2.VideoCapture(0)
+                if not cap.isOpened():
+                    st.warning("⚠️ Kamera tidak ditemukan. Jalankan di perangkat lokal dengan webcam.")
+                    return
+
+                while st.session_state.realtime:
+                    ret, frame = cap.read()
+                    if not ret:
+                        st.warning("⚠️ Tidak bisa membaca frame dari kamera.")
+                        break
+
+                    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    frame_resized = letterbox_image(frame_rgb, target_size=(640,640))
+
+                    results = model(frame_resized, conf=0.15, iou=0.3)
+                    result_frame = results[0].plot()
+
+                    frame_placeholder.image(result_frame, use_column_width=True)
+            except Exception as e:
+                st.error(f"Terjadi kesalahan: {e}")
+            finally:
+                cap.release()
+
 
 
 # Render halaman sesuai pilihan
